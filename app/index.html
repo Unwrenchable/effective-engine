@@ -227,12 +227,12 @@
         <p class="section-intro">
           Search current MLS listings across Las Vegas and surrounding communities via our IDX search system.
         </p>
-        <!-- data-idx-endpoint controls where MLS searches are sent -->
+        <!-- data-idx-endpoint points to the on-site IDX gateway (api/idx/search) -->
         <form
           aria-label="Property search"
           class="search-grid"
-          action="https://www.donnasellslv.com/idx/results"
-          data-idx-endpoint="https://www.donnasellslv.com/idx/results"
+          action="/api/idx/search"
+          data-idx-endpoint="/api/idx/search"
           method="get"
           role="search"
         >
@@ -765,79 +765,131 @@
         });
       });
 
-      // ─── IDX search mapping + redirect ─────────────────────────────
+      // ─── IDX search → local gateway ────────────────────────────────
       const propertySearchForm = document.querySelector('form[aria-label="Property search"]');
       if (propertySearchForm) {
-        const idxSearchEndpoint = propertySearchForm.dataset.idxEndpoint || propertySearchForm.action;
+        const idxSearchEndpoint = propertySearchForm.dataset.idxEndpoint || propertySearchForm.getAttribute('action');
         const priceMap = {
-          '500k-1m': { min: 500000, max: 1000000 },
-          '1m-2m': { min: 1000000, max: 2000000 },
-          '2m-5m': { min: 2000000, max: 5000000 },
-          '5m-10m': { min: 5000000, max: 10000000 },
-          '10m-plus': { min: 10000000 }
+          '500k-1m':  { minPrice: 500000,   maxPrice: 1000000 },
+          '1m-2m':    { minPrice: 1000000,  maxPrice: 2000000 },
+          '2m-5m':    { minPrice: 2000000,  maxPrice: 5000000 },
+          '5m-10m':   { minPrice: 5000000,  maxPrice: 10000000 },
+          '10m-plus': { minPrice: 10000000 }
         };
-        const homeTypeMap = {
-          'single-family': 'Single Family Residence',
-          penthouse: 'High Rise',
-          condo: 'Condominium',
-          estate: 'Luxury Estate',
-          'new-construction': 'New Construction',
-          'guard-gated': 'Guard Gated'
-        };
+        const digitsOnlyRegex = /^\d+$/;
+        const maxBedrooms = 20;
+        const getFieldValue = (name) => (new FormData(propertySearchForm).get(name) || '').toString().trim();
+        const sanitizeText  = (v) => v.replace(/[^a-zA-Z0-9\s,\-'.]/g, '').replace(/\s+/g, ' ').trim();
+
+        // Container to inject search results below the form section
+        let resultsContainer = document.getElementById('idx-results');
+        if (!resultsContainer) {
+          resultsContainer = document.createElement('section');
+          resultsContainer.id             = 'idx-results';
+          resultsContainer.className      = 'card idx-results-section';
+          resultsContainer.setAttribute('aria-live', 'polite');
+          resultsContainer.setAttribute('aria-label', 'Search results');
+          propertySearchForm.closest('section').insertAdjacentElement('afterend', resultsContainer);
+        }
+
+        function renderResults(data) {
+          if (!data || !Array.isArray(data.listings)) {
+            resultsContainer.innerHTML = '<p class="idx-error">Unable to load listings. Please try again.</p>';
+            return;
+          }
+          if (data.listings.length === 0) {
+            resultsContainer.innerHTML = '<p class="idx-no-results">No listings matched your search. Try broadening your criteria.</p>';
+            return;
+          }
+
+          const cards = data.listings.map(function (l) {
+            const photo   = (l.Photos && l.Photos[0] && l.Photos[0].Uri800) || '';
+            const address = [l.StreetNumber, l.StreetName, l.UnitNumber].filter(Boolean).join(' ');
+            const cityLine = [l.City, l.StateOrProvince, l.PostalCode].filter(Boolean).join(', ');
+            const price   = l.ListPrice ? '$' + Number(l.ListPrice).toLocaleString('en-US') : 'Price on request';
+            const beds    = l.BedroomsTotal   ? l.BedroomsTotal + ' bd'   : '';
+            const baths   = l.BathroomsTotalInteger ? l.BathroomsTotalInteger + ' ba' : '';
+            const sqft    = l.LivingArea ? Number(l.LivingArea).toLocaleString('en-US') + ' sqft' : '';
+            const details = [beds, baths, sqft].filter(Boolean).join(' · ');
+            const mlsId   = l.ListingId || '';
+            const attr    = (l._attribution && l._attribution.courtesyOf) || '';
+            const imgTag  = photo
+              ? `<img src="${escapeHtml(photo)}" alt="Photo of ${escapeHtml(address)}" loading="lazy" />`
+              : '<div class="idx-no-photo" aria-hidden="true"></div>';
+
+            return `<article class="listing-card idx-listing-card">
+              <a href="/api/idx/listing/${escapeHtml(mlsId)}" class="listing-photo-link" aria-label="View ${escapeHtml(address)}">${imgTag}</a>
+              <div class="listing-info">
+                <p class="listing-price">${escapeHtml(price)}</p>
+                <p class="listing-address">${escapeHtml(address)}</p>
+                <p class="listing-city">${escapeHtml(cityLine)}</p>
+                ${details ? `<p class="listing-details">${escapeHtml(details)}</p>` : ''}
+                ${attr     ? `<p class="listing-attribution">${escapeHtml(attr)}</p>` : ''}
+              </div>
+            </article>`;
+          }).join('');
+
+          const disclaimer = data.disclaimer
+            ? `<p class="idx-disclaimer">${escapeHtml(data.disclaimer)}</p>`
+            : '';
+
+          resultsContainer.innerHTML =
+            `<h2 class="idx-results-heading">Search Results <span class="idx-count">(${data.total} found)</span></h2>
+             <div class="listings-grid">${cards}</div>
+             ${disclaimer}`;
+        }
+
+        function escapeHtml(str) {
+          return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
 
         propertySearchForm.addEventListener('submit', function (e) {
           e.preventDefault();
 
-          const formData = new FormData(propertySearchForm);
-          const params = new URLSearchParams();
-          const digitsOnlyRegex = /^\d+$/;
-          const maxBedrooms = 20;
-          const getFieldValue = (name) => (formData.get(name) || '').toString().trim();
-          const sanitizeLocationInput = (value) =>
-            value.replace(/[^a-zA-Z0-9\s,\-'.]/g, '').replace(/\s+/g, ' ').trim();
-
           const location = getFieldValue('location');
-          const price = getFieldValue('price');
-          const beds = getFieldValue('beds');
+          const price    = getFieldValue('price');
+          const beds     = getFieldValue('beds');
           const homeType = getFieldValue('homeType');
 
+          const params = new URLSearchParams();
+
           if (location) {
-            const sanitizedLocation = sanitizeLocationInput(location);
-            if (sanitizedLocation) {
-              params.set('idx-q-Locations<0>', sanitizedLocation);
-            }
+            const s = sanitizeText(location);
+            if (s) params.set('location', s);
           }
 
           if (price && priceMap[price]) {
-            const selectedPrice = priceMap[price];
-            if (selectedPrice.min) params.set('idx-q-MinPrice', String(selectedPrice.min));
-            if (selectedPrice.max) params.set('idx-q-MaxPrice', String(selectedPrice.max));
+            if (priceMap[price].minPrice) params.set('minPrice', String(priceMap[price].minPrice));
+            if (priceMap[price].maxPrice) params.set('maxPrice', String(priceMap[price].maxPrice));
           }
 
           if (digitsOnlyRegex.test(beds)) {
             const bedsMin = Number.parseInt(beds, 10);
-            if (bedsMin >= 1 && bedsMin <= maxBedrooms) {
-              params.set('idx-q-BedsMin', String(bedsMin));
-            }
+            if (bedsMin >= 1 && bedsMin <= maxBedrooms) params.set('beds', String(bedsMin));
           }
 
-          if (homeType && homeTypeMap[homeType]) {
-            params.set('idx-q-PropertyTypes<0>', homeTypeMap[homeType]);
-          }
+          if (homeType) params.set('homeType', homeType);
 
-          let targetUrl;
-          try {
-            targetUrl = new URL(idxSearchEndpoint);
-          } catch (error) {
-            try {
-              targetUrl = new URL(idxSearchEndpoint, window.location.origin);
-            } catch (innerError) {
-              console.error('Invalid IDX search endpoint configuration.', innerError);
-              return;
-            }
-          }
-          targetUrl.search = params.toString();
-          window.location.assign(targetUrl.toString());
+          const apiUrl = idxSearchEndpoint + '?' + params.toString();
+
+          resultsContainer.innerHTML = '<p class="idx-loading" aria-busy="true">Searching MLS listings…</p>';
+          resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          fetch(apiUrl, { headers: { Accept: 'application/json' } })
+            .then(function (res) {
+              if (!res.ok) throw new Error('Search request failed (' + res.status + ')');
+              return res.json();
+            })
+            .then(renderResults)
+            .catch(function (err) {
+              console.error('IDX search error:', err);
+              resultsContainer.innerHTML = '<p class="idx-error">Search unavailable right now. Please try again.</p>';
+            });
         });
       }
 
