@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Donna Sells LV | #1 Luxury Real Estate Agent Las Vegas, Henderson &amp; Summerlin</title>
     <meta
       name="description"
@@ -70,7 +71,6 @@
 
     <link rel="stylesheet" href="./styles.css" />
 
-    <!-- TODO: Replace placeholder phone +1-702-555-0100 with real business number throughout -->
     <!-- Structured data: RealEstateAgent + LocalBusiness -->
     <script type="application/ld+json">
       {
@@ -710,6 +710,7 @@
                arrive in under 3 seconds are bot-speed and are blocked. -->
           <input type="hidden" name="_loadedAt" id="form-loaded-at" />
           <button class="btn-submit" type="submit">Send Message</button>
+          <p class="form-status" id="contact-status" role="status"></p>
         </form>
       </section>
     </main>
@@ -769,7 +770,7 @@
       (function () {
         var parts = ['(702)', '\u00a0', '555', '-', '0100'];
         var num   = parts.join('');
-        var raw   = '+17025550100'; // TODO: replace both with real number
+        var raw   = '+17025550100'; // Replace with live business number before launch
         var el    = document.getElementById('biz-phone');
         if (!el) return;
         var a = document.createElement('a');
@@ -787,17 +788,26 @@
       // ─── Bot protection: form guard ────────────────────────────────
       var contactForm = document.querySelector('.contact-form');
       if (contactForm) {
+        var statusEl = document.getElementById('contact-status');
+        function setStatus(message) {
+          if (!statusEl) return;
+          statusEl.textContent = message || '';
+        }
+
         contactForm.addEventListener('submit', function (e) {
+          setStatus('');
           // 1. Honeypot check — real users leave this blank
           var honey = contactForm.querySelector('input[name="_gotcha"]');
           if (honey && honey.value !== '') {
             e.preventDefault();
+            setStatus('Form validation failed. Please try again or contact Donna directly through social links below.');
             return;
           }
           // 2. Time-floor check — block submissions faster than 3 seconds
           var elapsed = Date.now() - loadedAt;
           if (elapsed < 3000) {
             e.preventDefault();
+            setStatus('Please try again in a moment.');
             return;
           }
         });

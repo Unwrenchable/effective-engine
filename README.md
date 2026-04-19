@@ -26,4 +26,11 @@ Open `app/index.html` in any browser, or serve the `app/` folder as the web root
 2. Update the search form `action` URL to your IDX/MLS search page.
 3. Update canonical URL and Open Graph `og:url` to your production domain.
 4. Replace the Twitter `@donnasellslv` handle if needed.
-5. Deploy the `app/` folder to any static host (Vercel, Netlify, GitHub Pages, etc.).
+5. Replace placeholder phone values in JSON-LD and footer phone obfuscation script.
+6. Deploy the `app/` folder to any static host (Vercel, Netlify, GitHub Pages, etc.).
+
+## Deployment
+
+For full production deployment steps, validation, host-specific setup, and rollback:
+
+- See [`DEPLOYMENT.md`](./DEPLOYMENT.md)
