@@ -225,13 +225,14 @@
       <section aria-labelledby="search-heading" class="card" id="search">
         <h2 id="search-heading">Find Your Property</h2>
         <p class="section-intro">
-          Search current MLS listings across Las Vegas and surrounding communities.
+          Search current MLS listings across Las Vegas and surrounding communities via our IDX search system.
         </p>
-        <!-- Update action URL to your IDX/MLS search endpoint before deploying -->
+        <!-- data-idx-endpoint controls where MLS searches are sent -->
         <form
           aria-label="Property search"
           class="search-grid"
-          action="https://www.donnasellslv.com/search"
+          action="https://www.donnasellslv.com/idx/results"
+          data-idx-endpoint="https://www.donnasellslv.com/idx/results"
           method="get"
           role="search"
         >
@@ -293,12 +294,12 @@
             Home Type
             <select id="homeType" name="homeType">
               <option value="">Any</option>
-              <option>Single Family</option>
-              <option>Penthouse</option>
-              <option>Condo</option>
-              <option>Estate</option>
-              <option>New Construction</option>
-              <option>Guard-Gated</option>
+              <option value="single-family">Single Family</option>
+              <option value="penthouse">Penthouse</option>
+              <option value="condo">Condo</option>
+              <option value="estate">Estate</option>
+              <option value="new-construction">New Construction</option>
+              <option value="guard-gated">Guard-Gated</option>
             </select>
           </label>
           <div class="search-action">
@@ -763,6 +764,82 @@
           menu.classList.remove('is-open');
         });
       });
+
+      // ─── IDX search mapping + redirect ─────────────────────────────
+      const propertySearchForm = document.querySelector('form[aria-label="Property search"]');
+      if (propertySearchForm) {
+        const idxSearchEndpoint = propertySearchForm.dataset.idxEndpoint || propertySearchForm.action;
+        const priceMap = {
+          '500k-1m': { min: 500000, max: 1000000 },
+          '1m-2m': { min: 1000000, max: 2000000 },
+          '2m-5m': { min: 2000000, max: 5000000 },
+          '5m-10m': { min: 5000000, max: 10000000 },
+          '10m-plus': { min: 10000000 }
+        };
+        const homeTypeMap = {
+          'single-family': 'Single Family Residence',
+          penthouse: 'High Rise',
+          condo: 'Condominium',
+          estate: 'Luxury Estate',
+          'new-construction': 'New Construction',
+          'guard-gated': 'Guard Gated'
+        };
+
+        propertySearchForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(propertySearchForm);
+          const params = new URLSearchParams();
+          const digitsOnlyRegex = /^\d+$/;
+          const maxBedrooms = 20;
+          const getFieldValue = (name) => (formData.get(name) || '').toString().trim();
+          const sanitizeLocationInput = (value) =>
+            value.replace(/[^a-zA-Z0-9\s,\-'.]/g, '').replace(/\s+/g, ' ').trim();
+
+          const location = getFieldValue('location');
+          const price = getFieldValue('price');
+          const beds = getFieldValue('beds');
+          const homeType = getFieldValue('homeType');
+
+          if (location) {
+            const sanitizedLocation = sanitizeLocationInput(location);
+            if (sanitizedLocation) {
+              params.set('idx-q-Locations<0>', sanitizedLocation);
+            }
+          }
+
+          if (price && priceMap[price]) {
+            const selectedPrice = priceMap[price];
+            if (selectedPrice.min) params.set('idx-q-MinPrice', String(selectedPrice.min));
+            if (selectedPrice.max) params.set('idx-q-MaxPrice', String(selectedPrice.max));
+          }
+
+          if (digitsOnlyRegex.test(beds)) {
+            const bedsMin = Number.parseInt(beds, 10);
+            if (bedsMin >= 1 && bedsMin <= maxBedrooms) {
+              params.set('idx-q-BedsMin', String(bedsMin));
+            }
+          }
+
+          if (homeType && homeTypeMap[homeType]) {
+            params.set('idx-q-PropertyTypes<0>', homeTypeMap[homeType]);
+          }
+
+          let targetUrl;
+          try {
+            targetUrl = new URL(idxSearchEndpoint);
+          } catch (error) {
+            try {
+              targetUrl = new URL(idxSearchEndpoint, window.location.origin);
+            } catch (innerError) {
+              console.error('Invalid IDX search endpoint configuration.', innerError);
+              return;
+            }
+          }
+          targetUrl.search = params.toString();
+          window.location.assign(targetUrl.toString());
+        });
+      }
 
       // ─── Phone obfuscation ─────────────────────────────────────────
       // The number is split into parts and assembled at runtime so
