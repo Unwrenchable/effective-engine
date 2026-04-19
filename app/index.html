@@ -768,7 +768,7 @@
       // ─── IDX search mapping + redirect ─────────────────────────────
       const propertySearchForm = document.querySelector('form[aria-label="Property search"]');
       if (propertySearchForm) {
-        const IDX_SEARCH_ENDPOINT = propertySearchForm.dataset.idxEndpoint || propertySearchForm.action;
+        const idxSearchEndpoint = propertySearchForm.dataset.idxEndpoint || propertySearchForm.action;
         const priceMap = {
           '500k-1m': { min: 500000, max: 1000000 },
           '1m-2m': { min: 1000000, max: 2000000 },
@@ -790,9 +790,7 @@
 
           const formData = new FormData(propertySearchForm);
           const params = new URLSearchParams();
-          const getField = function (name) {
-            return (formData.get(name) || '').toString().trim();
-          };
+          const getField = (name) => (formData.get(name) || '').toString().trim();
 
           const location = getField('location');
           const price = getField('price');
@@ -819,9 +817,9 @@
 
           let targetUrl;
           try {
-            targetUrl = new URL(IDX_SEARCH_ENDPOINT);
+            targetUrl = new URL(idxSearchEndpoint);
           } catch (error) {
-            targetUrl = new URL(IDX_SEARCH_ENDPOINT, window.location.origin);
+            targetUrl = new URL(idxSearchEndpoint, window.location.origin);
           }
           targetUrl.search = params.toString();
           window.location.assign(targetUrl.toString());
