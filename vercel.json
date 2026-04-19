@@ -19,7 +19,6 @@
   "rewrites": [
     {
       "source":      "/api/v2/:path*",
-      "_note":       "Replace PLATFORM_SERVER_URL with your Railway/Render URL — see DEPLOYMENT.md",
       "destination": "PLATFORM_SERVER_URL/v2/:path*"
     }
   ],
