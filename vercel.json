@@ -6,12 +6,23 @@
     }
   },
   "env": {
-    "IDX_BASE_URL":       "@idx_base_url",
-    "IDX_CLIENT_ID":      "@idx_client_id",
-    "IDX_CLIENT_SECRET":  "@idx_client_secret",
-    "IDX_API_KEY":        "@idx_api_key",
-    "SITE_ORIGIN":        "@site_origin"
+    "IDX_BASE_URL":        "@idx_base_url",
+    "IDX_CLIENT_ID":       "@idx_client_id",
+    "IDX_CLIENT_SECRET":   "@idx_client_secret",
+    "IDX_API_KEY":         "@idx_api_key",
+    "SITE_ORIGIN":         "@site_origin",
+    "RESO_BASE_URL":       "@reso_base_url",
+    "RESO_CLIENT_ID":      "@reso_client_id",
+    "RESO_CLIENT_SECRET":  "@reso_client_secret",
+    "RESO_API_KEY":        "@reso_api_key"
   },
+  "rewrites": [
+    {
+      "source":      "/api/v2/:path*",
+      "_note":       "Replace PLATFORM_SERVER_URL with your Railway/Render URL — see DEPLOYMENT.md",
+      "destination": "PLATFORM_SERVER_URL/v2/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
