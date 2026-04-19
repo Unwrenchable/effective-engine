@@ -114,7 +114,15 @@ module.exports = async function idxRoutes(fastify) {
   });
 
   // ── GET /api/idx/verify ───────────────────────────────────────────────────
-  fastify.get('/verify', async (_req, reply) => {
+  fastify.get('/verify', {
+    config: {
+      rateLimit: {
+        max:        10,
+        timeWindow: '1 minute',
+        errorResponseBuilder: () => ({ connected: false, error: 'Rate limit exceeded.' }),
+      },
+    },
+  }, async (_req, reply) => {
     try {
       const result = await verifyConnection();
       return reply.send(result);

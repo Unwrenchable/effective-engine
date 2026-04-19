@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS showings (
   showing_date    DATE         NOT NULL,
   start_time      TIME         NOT NULL,
   end_time        TIME         NOT NULL,
-  status          TEXT         NOT NULL DEFAULT 'pending',
-  --   pending | confirmed | cancelled | completed
+  status          TEXT         NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed')),
   notes           TEXT,
   confirmed_at    TIMESTAMPTZ,
   created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -57,7 +57,8 @@ CREATE TABLE IF NOT EXISTS documents (
   doc_type         TEXT         NOT NULL,
   --   offer | counter_offer | purchase_agreement | disclosure | addendum | other
   title            TEXT         NOT NULL,
-  status           TEXT         NOT NULL DEFAULT 'draft',
+  status           TEXT         NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft', 'sent', 'signed', 'voided', 'expired')),
   --   draft | sent | signed | voided | expired
   docuseal_id      TEXT,        -- external ID if using Docuseal
   file_path        TEXT,        -- local path under MEDIA_LOCAL_PATH/documents/
