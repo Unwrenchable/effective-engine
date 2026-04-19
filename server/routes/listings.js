@@ -166,7 +166,7 @@ module.exports = async function listingRoutes(fastify) {
       const answer = await chatAnswer(result.listing, history, question);
       return reply.send({ answer });
     } catch (err) {
-      if (err.message?.includes('OPENAI_API_KEY')) {
+      if (err.message?.includes('AI features are unavailable')) {
         return reply.code(503).send({ error: 'AI assistant is not configured.' });
       }
       throw err;

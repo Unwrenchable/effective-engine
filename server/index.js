@@ -35,6 +35,8 @@ const Fastify      = require('fastify');
 const cors         = require('@fastify/cors');
 const jwt          = require('@fastify/jwt');
 const rateLimit    = require('@fastify/rate-limit');
+const staticFiles  = require('@fastify/static');
+const path         = require('path');
 const config       = require('./config');
 
 async function buildApp() {
@@ -70,6 +72,29 @@ async function buildApp() {
     secret: config.jwt.secret,
   });
 
+  // Serve local media files (photos stored by the CDN_PROVIDER=local pipeline)
+  // Available at /media/listings/<id>/photo.jpg
+  const mediaPath = path.resolve(config.cdn.localPath);
+  const fs = require('fs');
+  if (!fs.existsSync(mediaPath)) fs.mkdirSync(mediaPath, { recursive: true });
+  await fastify.register(staticFiles, {
+    root:       mediaPath,
+    prefix:     config.cdn.localPublicUrl.replace(/\/?$/, '/'),
+    decorateReply: false,
+  });
+
+  // Serve the static frontend (app/ directory) at the root
+  // When self-hosting without Vercel, the Fastify server delivers everything.
+  const appPath = path.resolve(__dirname, '..', 'app');
+  if (fs.existsSync(appPath)) {
+    await fastify.register(staticFiles, {
+      root:          appPath,
+      prefix:        '/',
+      decorateReply: false,
+      index:         'index.html',
+    });
+  }
+
   // Decorate with `authenticate` — use in routes via onRequest: [fastify.authenticate]
   fastify.decorate('authenticate', async function (req, reply) {
     try {
@@ -87,6 +112,7 @@ async function buildApp() {
 
   // ── Routes ─────────────────────────────────────────────────────────────────
 
+  fastify.register(require('./routes/idx'),           { prefix: '/api/idx' });
   fastify.register(require('./routes/auth'),          { prefix: '/v2/auth' });
   fastify.register(require('./routes/listings'),       { prefix: '/v2/listings' });
   fastify.register(require('./routes/market'),         { prefix: '/v2/market' });

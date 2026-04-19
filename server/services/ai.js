@@ -1,45 +1,74 @@
 'use strict';
 
 /**
- * OpenAI integration service.
+ * AI service — self-hosted first, cloud optional.
+ *
+ * Default provider: Ollama (runs locally or on the same VPS).
+ *   Install: https://ollama.com
+ *   Models:  ollama pull nomic-embed-text   (embeddings, 768-dim)
+ *            ollama pull llama3.2           (chat / descriptions / narratives)
+ *            ollama pull llava              (photo feature tagging, vision)
+ *
+ * Fallback provider: OpenAI (set AI_PROVIDER=openai or OPENAI_API_KEY when
+ *   Ollama is not available).
  *
  * Provides:
- *  - generateEmbedding()       — 1536-dim vector for semantic search
+ *  - generateEmbedding()          — 768-dim vector for semantic search
  *  - generateListingDescription() — AI-written listing description
  *  - generateMarketNarrative()    — neighbourhood market summary
- *  - analyzePhotos()              — feature tags from listing photos
+ *  - analyzePhoto()               — feature tags from listing photos
  *  - chatAnswer()                 — conversational listing assistant
+ *  - buildListingText()           — shared text corpus builder
  */
 
 const config = require('../config');
+
+// ─── Provider detection ──────────────────────────────────────────────────────
+
+function isOllama() {
+  return config.ai.provider === 'ollama';
+}
+
+// ─── Ollama HTTP helpers ─────────────────────────────────────────────────────
+
+async function ollamaPost(path, body, timeoutMs = 120_000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${config.ai.ollamaBaseUrl}${path}`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+      signal:  controller.signal,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Ollama ${path} error ${res.status}: ${text.slice(0, 200)}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─── OpenAI lazy init ────────────────────────────────────────────────────────
 
 let _openai = null;
 
 function getOpenAI() {
   if (_openai) return _openai;
-  if (!config.openai.apiKey) {
-    throw new Error('OPENAI_API_KEY is not configured. AI features are unavailable.');
+  if (!config.ai.openaiApiKey) {
+    throw new Error(
+      'AI features are unavailable: Ollama is not reachable and OPENAI_API_KEY is not set. ' +
+      'Start Ollama (https://ollama.com) or set AI_PROVIDER=openai with a valid key.'
+    );
   }
   const { OpenAI } = require('openai');
-  _openai = new OpenAI({ apiKey: config.openai.apiKey });
+  _openai = new OpenAI({ apiKey: config.ai.openaiApiKey });
   return _openai;
 }
 
-// ─── Embeddings ──────────────────────────────────────────────────────────────
-
-/**
- * Generate a text embedding vector.
- * @param {string} text
- * @returns {Promise<number[]>}  1536-dimensional array
- */
-async function generateEmbedding(text) {
-  const openai = getOpenAI();
-  const resp   = await openai.embeddings.create({
-    model: config.openai.embeddingModel,
-    input: text.slice(0, 8192),  // cap to model max tokens
-  });
-  return resp.data[0].embedding;
-}
+// ─── Text corpus builder ─────────────────────────────────────────────────────
 
 /**
  * Build a text corpus from a listing object suitable for embedding.
@@ -68,6 +97,40 @@ function buildListingText(listing) {
   return parts.filter(Boolean).join('. ');
 }
 
+// ─── Embeddings ──────────────────────────────────────────────────────────────
+
+/**
+ * Generate a text embedding vector.
+ * Ollama: 768-dimensional (nomic-embed-text).
+ * OpenAI: 1536-dimensional (text-embedding-3-small).
+ *
+ * @param {string} text
+ * @returns {Promise<number[]>}
+ */
+async function generateEmbedding(text) {
+  const input = text.slice(0, 8192);
+
+  if (isOllama()) {
+    try {
+      const resp = await ollamaPost('/api/embeddings', {
+        model:  config.ai.ollamaEmbedModel,
+        prompt: input,
+      });
+      return resp.embedding;
+    } catch (err) {
+      console.warn('[ai] Ollama embedding failed, trying OpenAI fallback:', err.message);
+      // fall through to OpenAI
+    }
+  }
+
+  const openai = getOpenAI();
+  const resp   = await openai.embeddings.create({
+    model: config.ai.openaiEmbedModel,
+    input,
+  });
+  return resp.data[0].embedding;
+}
+
 // ─── Description generation ──────────────────────────────────────────────────
 
 /**
@@ -78,8 +141,6 @@ function buildListingText(listing) {
  * @returns {Promise<string>}
  */
 async function generateListingDescription(listing) {
-  const openai = getOpenAI();
-
   const prompt = `You are a luxury real estate copywriter for the Las Vegas Valley market.
 Write a compelling, 3–4 paragraph property description (200–350 words) based on these details.
 Tone: aspirational, elegant, specific. No made-up facts.
@@ -102,13 +163,27 @@ Property details:
 
 Write only the description. Do not include headings or bullet points.`;
 
+  if (isOllama()) {
+    try {
+      const resp = await ollamaPost('/api/chat', {
+        model:  config.ai.ollamaChatModel,
+        stream: false,
+        messages: [{ role: 'user', content: prompt }],
+        options: { temperature: 0.7, num_predict: 500 },
+      });
+      return resp.message.content.trim();
+    } catch (err) {
+      console.warn('[ai] Ollama description failed, trying OpenAI fallback:', err.message);
+    }
+  }
+
+  const openai = getOpenAI();
   const resp = await openai.chat.completions.create({
-    model:       config.openai.chatModel,
+    model:       config.ai.openaiChatModel,
     messages:    [{ role: 'user', content: prompt }],
     max_tokens:  500,
     temperature: 0.7,
   });
-
   return resp.choices[0].message.content.trim();
 }
 
@@ -122,8 +197,6 @@ Write only the description. Do not include headings or bullet points.`;
  * @returns {Promise<string>}
  */
 async function generateMarketNarrative(neighbourhood, stats) {
-  const openai = getOpenAI();
-
   const fmt = (n) => n != null ? n.toLocaleString() : 'N/A';
   const usd = (n) => n != null ? '$' + Math.round(n).toLocaleString() : 'N/A';
 
@@ -141,13 +214,27 @@ Statistics (last 30 days):
 
 Write only the narrative. No headings.`;
 
+  if (isOllama()) {
+    try {
+      const resp = await ollamaPost('/api/chat', {
+        model:  config.ai.ollamaChatModel,
+        stream: false,
+        messages: [{ role: 'user', content: prompt }],
+        options: { temperature: 0.5, num_predict: 200 },
+      });
+      return resp.message.content.trim();
+    } catch (err) {
+      console.warn('[ai] Ollama narrative failed, trying OpenAI fallback:', err.message);
+    }
+  }
+
+  const openai = getOpenAI();
   const resp = await openai.chat.completions.create({
-    model:       config.openai.chatModel,
+    model:       config.ai.openaiChatModel,
     messages:    [{ role: 'user', content: prompt }],
     max_tokens:  200,
     temperature: 0.5,
   });
-
   return resp.choices[0].message.content.trim();
 }
 
@@ -155,46 +242,58 @@ Write only the narrative. No headings.`;
 
 /**
  * Analyse a listing photo and return feature tags.
- * Uses GPT-4o vision.
+ * Ollama: LLaVA (multimodal vision model, runs locally).
+ * OpenAI fallback: GPT-4o vision.
  *
  * @param {string} imageUrl  publicly accessible image URL
  * @returns {Promise<string[]>}  e.g. ['pool','open-concept kitchen','mountain view']
  */
 async function analyzePhoto(imageUrl) {
-  const openai = getOpenAI();
+  const tagPrompt = 'List the notable real estate features visible in this photo as a JSON array of short tags (e.g. ["pool","granite countertops","mountain view","open floor plan"]). Return only the JSON array, no other text.';
 
+  if (isOllama()) {
+    try {
+      // LLaVA accepts images as base64 or URL strings in the 'images' field
+      const imageData = await fetchImageAsBase64(imageUrl);
+      if (imageData) {
+        const resp = await ollamaPost('/api/chat', {
+          model:  config.ai.ollamaVisionModel,
+          stream: false,
+          messages: [{
+            role:    'user',
+            content: tagPrompt,
+            images:  [imageData],
+          }],
+          options: { temperature: 0.2, num_predict: 150 },
+        });
+        return parseTagsFromContent(resp.message.content.trim());
+      }
+    } catch (err) {
+      console.warn('[ai] Ollama photo analysis failed, trying OpenAI fallback:', err.message);
+    }
+  }
+
+  const openai = getOpenAI();
   const resp = await openai.chat.completions.create({
     model: 'gpt-4o',
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'List the notable real estate features visible in this photo as a JSON array of short tags (e.g. ["pool","granite countertops","mountain view","open floor plan"]). Return only the JSON array, no other text.',
-          },
-          { type: 'image_url', image_url: { url: imageUrl, detail: 'low' } },
-        ],
-      },
-    ],
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: tagPrompt },
+        { type: 'image_url', image_url: { url: imageUrl, detail: 'low' } },
+      ],
+    }],
     max_tokens: 150,
   });
-
-  const content = resp.choices[0].message.content.trim();
-  try {
-    const tags = JSON.parse(content);
-    return Array.isArray(tags) ? tags.map(String) : [];
-  } catch {
-    // Fallback: extract quoted strings
-    const matches = content.match(/"([^"]+)"/g) || [];
-    return matches.map((m) => m.replace(/"/g, ''));
-  }
+  return parseTagsFromContent(resp.choices[0].message.content.trim());
 }
 
 // ─── Listing chatbot ─────────────────────────────────────────────────────────
 
 /**
- * Answer a buyer question about a specific listing using GPT-4.
+ * Answer a buyer question about a specific listing.
+ * Ollama: llama3.2 (or configured model, runs locally).
+ * OpenAI fallback: gpt-4o-mini.
  *
  * @param {object} listing    compliance-filtered listing object
  * @param {object[]} history  [{role:'user'|'assistant', content:string}]
@@ -202,8 +301,6 @@ async function analyzePhoto(imageUrl) {
  * @returns {Promise<string>}
  */
 async function chatAnswer(listing, history, question) {
-  const openai = getOpenAI();
-
   const systemPrompt = `You are a knowledgeable, friendly real estate assistant for the luxury Las Vegas Valley market.
 Answer questions about this listing concisely and helpfully.
 If a question falls outside the listing details, say you don't know and suggest contacting the listing agent.
@@ -219,18 +316,60 @@ Listing Office: ${listing.list_office_name || 'N/A'}`;
 
   const messages = [
     { role: 'system', content: systemPrompt },
-    ...history.slice(-10),  // keep last 10 turns for context
+    ...history.slice(-10),
     { role: 'user', content: question },
   ];
 
+  if (isOllama()) {
+    try {
+      const resp = await ollamaPost('/api/chat', {
+        model:  config.ai.ollamaChatModel,
+        stream: false,
+        messages,
+        options: { temperature: 0.3, num_predict: 400 },
+      });
+      return resp.message.content.trim();
+    } catch (err) {
+      console.warn('[ai] Ollama chat failed, trying OpenAI fallback:', err.message);
+    }
+  }
+
+  const openai = getOpenAI();
   const resp = await openai.chat.completions.create({
-    model:       'gpt-4o-mini',
+    model:       config.ai.openaiChatModel,
     messages,
     max_tokens:  400,
     temperature: 0.3,
   });
-
   return resp.choices[0].message.content.trim();
+}
+
+// ─── Internal helpers ────────────────────────────────────────────────────────
+
+/**
+ * Fetch an image URL and return it as a base64 string (without data-URI prefix).
+ * Returns null on failure so callers can skip gracefully.
+ */
+async function fetchImageAsBase64(imageUrl) {
+  try {
+    const res = await fetch(imageUrl, { signal: AbortSignal.timeout(15_000) });
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    return buf.toString('base64');
+  } catch {
+    return null;
+  }
+}
+
+/** Parse a JSON tag array out of an LLM response, with fallback. */
+function parseTagsFromContent(content) {
+  try {
+    const tags = JSON.parse(content);
+    return Array.isArray(tags) ? tags.map(String) : [];
+  } catch {
+    const matches = content.match(/"([^"]+)"/g) || [];
+    return matches.map((m) => m.replace(/"/g, ''));
+  }
 }
 
 module.exports = {

@@ -35,24 +35,21 @@ Dark midnight-blue / saddle-gold luxury aesthetic. Serves high-net-worth buyers 
 ```
 effective-engine/
 │
-├── app/                   Static frontend (HTML/CSS) — Vercel CDN
+├── app/                   Static frontend (HTML/CSS)
 │   ├── index.html         Site 1: Donna Sells LV (luxury real estate)
 │   ├── styles.css         Site 1 styles
 │   ├── horses/
 │   │   ├── index.html     Site 2: Nevada Horse Properties
 │   │   └── styles.css     Site 2 styles (earthy equestrian design system)
 │
-├── api/idx/               Vercel Serverless — IDX proxy (existing, kept for compatibility)
-│   ├── _lib/client.js     Spark API + RESO Web API client
-│   ├── _lib/compliance.js IDX display-rule enforcement
-│   ├── search.js          GET /api/idx/search
-│   ├── verify.js          GET /api/idx/verify
-│   └── listing/[id].js    GET /api/idx/listing/:id
+├── public/media/          Local photo storage (CDN_PROVIDER=local default)
+│   └── listings/          Auto-created by the media pipeline
 │
-├── server/                Platform API server (Fastify — deploy to Railway/Render/VPS)
-│   ├── index.js           Server entry point
+├── server/                All-in-one Fastify server (self-host on any VPS)
+│   ├── index.js           Entry point — serves app/, /media, /api/idx/*, /v2/*
 │   ├── config.js          Centralised ENV variable loading
 │   ├── routes/            API route handlers
+│   │   ├── idx.js         GET /api/idx/search|verify, /api/idx/listing/:id
 │   │   ├── listings.js    GET/POST /v2/listings
 │   │   ├── market.js      GET /v2/market/stats
 │   │   ├── neighborhoods.js  GET /v2/neighborhoods/:slug
@@ -64,45 +61,57 @@ effective-engine/
 │   ├── models/            Database access layer (PostgreSQL)
 │   ├── services/          Business logic
 │   │   ├── search.js      Structured + semantic (vector) search
-│   │   ├── ai.js          OpenAI: embeddings, descriptions, photo tags, chatbot
+│   │   ├── ai.js          Ollama (local) + OpenAI fallback: embeddings, descriptions, chatbot
 │   │   ├── market.js      Market stats + AI narratives
-│   │   ├── avm.js         Automated Valuation Model
-│   │   └── compliance.js  IDX display rules
+│   │   ├── avm.js         Automated Valuation Model (comparable-sales)
+│   │   └── compliance.js  IDX display rules (GLVAR)
 │   └── sync/              MLS data pipeline
-│       ├── reso-client.js RESO Web API (OData) client — direct MLS feed
+│       ├── reso-client.js RESO Web API (OData) client + RESO_MOCK=true dev mode
 │       ├── ingest.js      Full + delta sync jobs
-│       ├── media.js       Photo CDN pipeline (R2/S3)
+│       ├── media.js       Photo pipeline: local | minio | r2 | s3
 │       └── scheduler.js   pg-boss cron scheduler
 │
 └── db/
     ├── migrations/        PostgreSQL schema (PostGIS + pgvector)
+    │   ├── 007_local_ai.sql   Embedding dim 768 (nomic-embed-text)
+    │   └── 008_future.sql     blockchain_tx_hash, showings, documents
+    ├── seed/
+    │   └── listings.json  Sample RESO listings for RESO_MOCK=true dev mode
     └── migrate.js         Migration runner
 ```
 
 ## What's included
 
-### Existing (Vercel serverless — always on)
-- **Property search** wired to `/api/idx/search`
-- **IDX gateway** — securely proxies Spark API or RESO direct feed
-- **GLVAR compliance** — opt-out filtering, field redaction, photo caps, attribution
-- **Listing detail** — full MLS record at `/api/idx/listing/:id`
-
-### New platform server (`server/`)
-- **RESO Web API client** — direct MLS feed replacing Spark once vendor-licensed
+### All-in-one Fastify server (`server/`)
+- **IDX gateway** — `/api/idx/*` routes built into Fastify (replaces Vercel serverless)
+- **RESO Web API client** — direct MLS feed; set `RESO_MOCK=true` for development (no live license needed)
 - **Local listing database** — PostgreSQL + PostGIS (geo) + pgvector (AI search)
-- **Semantic search** — natural language via OpenAI embeddings + pgvector
-- **AI description generation** — GPT-4 fills weak/missing listing remarks
+- **Semantic search** — natural language via local embeddings (Ollama `nomic-embed-text`) + pgvector
+- **AI description generation** — local LLM (Ollama `llama3.2`) fills weak/missing listing remarks
 - **AI market narratives** — per-neighbourhood stats summary (Summerlin, Henderson, etc.)
-- **AI photo tagging** — GPT-4 vision extracts feature tags from photos
-- **AVM (automated valuation)** — comparable-sales estimate for any listing
+- **AI photo tagging** — local vision model (Ollama `llava`) extracts feature tags from photos
+- **OpenAI optional fallback** — set `AI_PROVIDER=openai` when Ollama is not available
+- **AVM (automated valuation)** — comparable-sales estimate, no external API
 - **Listing chatbot** — conversational assistant on listing pages
 - **Buyer alerts** — saved searches with email notifications on new matches
 - **JWT auth** — consumer/agent/broker/admin roles
-- **API key issuance** — sub-license IDX display to other agents (you become the provider)
-- **Agent portal API** — agent listings, lead inbox endpoints
-- **Admin sync API** — trigger manual full/delta MLS sync
-- **Off-market listings table** — pocket listings compliant with NAR Clear Cooperation Policy
-- **Compliance audit log** — automated per-session IDX display records for MLS reporting
+- **GLVAR IDX compliance** — opt-out filtering, field redaction, photo caps, attribution
+- **Static file serving** — serves `app/` HTML/CSS and `public/media/` photos directly
+- **Local photo storage** — `CDN_PROVIDER=local` (default); upgrade to MinIO, R2, or S3 via env var
+- **Self-hosted email** — raw SMTP; point at your own Postfix/mailserver, no Sendgrid required
+- **Future schema** — `showings` table (self-scheduling), `documents` table (e-signature), `blockchain_tx_hash`
+
+## Third-party dependencies
+
+| Dependency | Required? | Alternative |
+|---|---|---|
+| **MLS / RESO credentials** | Yes (for live data) | `RESO_MOCK=true` for dev |
+| **Ollama** (AI) | Recommended | `AI_PROVIDER=openai` |
+| **PostgreSQL** | Yes | Self-host on any VPS |
+| **SMTP server** | Yes (for alerts) | Self-host Postfix / any SMTP |
+| **Vercel** | No | Fastify serves everything |
+| **OpenAI** | No | Ollama default |
+| **Cloudflare R2 / AWS S3** | No | `CDN_PROVIDER=local` default |
 
 ## API endpoints (platform server `/v2/`)
 
@@ -148,61 +157,75 @@ effective-engine/
 | `page` | integer | 1-based page (default 1) |
 | `pageSize` | integer | Results per page, max 50 (default 12) |
 
-## IDX Gateway (existing Vercel functions)
+## IDX Gateway (built into Fastify — no Vercel serverless needed)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/idx/verify` | Test MLS connection |
-| `GET` | `/api/idx/search` | Search active listings |
-| `GET` | `/api/idx/listing/:id` | Listing detail by MLS# |
+| `GET` | `/api/idx/verify` | Test RESO / mock connection |
+| `GET` | `/api/idx/search` | Search active listings from local DB |
+| `GET` | `/api/idx/listing/:id` | Listing detail by MLS# from local DB |
 
 ## Environment variables
 
-### Vercel (existing IDX proxy)
+Full list in `.env.example`. Key variables:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `IDX_BASE_URL` | Yes | Spark API base URL |
-| `IDX_CLIENT_ID` | OAuth2 | Spark OAuth2 client ID |
-| `IDX_CLIENT_SECRET` | OAuth2 | Spark OAuth2 client secret |
-| `IDX_API_KEY` | API key | Static bearer token alternative |
-| `SITE_ORIGIN` | Yes | Production CORS origin |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | — | PostgreSQL connection string (required) |
+| `RESO_MOCK` | `true` | Use seed data instead of live MLS feed |
+| `RESO_BASE_URL` | — | Live RESO OData endpoint (when licensed) |
+| `AI_PROVIDER` | `ollama` | `ollama` (self-hosted) or `openai` |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server URL |
+| `CDN_PROVIDER` | `local` | `local` · `minio` · `r2` · `s3` |
+| `JWT_SECRET` | — | At least 64-char secret (required) |
+| `SMTP_HOST` | `localhost` | Your SMTP server |
 
-### New RESO direct feed (when vendor license obtained)
-
-| Variable | Description |
-|----------|-------------|
-| `RESO_BASE_URL` | RESO OData endpoint (activates direct feed mode) |
-| `RESO_CLIENT_ID` | RESO OAuth2 client ID |
-| `RESO_CLIENT_SECRET` | RESO OAuth2 client secret |
-| `RESO_API_KEY` | Static token alternative |
-
-### Platform server (full list in `.env.example`)
-
-Set `DATABASE_URL`, `OPENAI_API_KEY`, `JWT_SECRET`, CDN settings, etc. See `.env.example`.
-
-## Quick start (platform server)
+## Quick start
 
 ```bash
-# 1. Install dependencies
+# 1. Install Ollama (self-hosted AI)
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull nomic-embed-text   # embeddings
+ollama pull llama3.2           # chat / descriptions
+ollama pull llava              # photo tags (vision)
+
+# 2. Install dependencies
 npm install
 
-# 2. Set up environment
+# 3. Set up environment
 cp .env.example .env
-# Edit .env with your DATABASE_URL, OPENAI_API_KEY, etc.
+# Edit .env — set DATABASE_URL and JWT_SECRET at minimum
 
-# 3. Run database migrations
+# 4. Run database migrations
 npm run migrate
 
-# 4. Run initial MLS sync (requires RESO_BASE_URL or IDX_* credentials)
-npm run sync:now
+# 5. (Optional) Seed with mock listings for development
+# RESO_MOCK=true is already the default in .env.example
 
-# 5. Start the server
+# 6. Run initial MLS sync
+npm run sync:now   # uses RESO_MOCK=true seed data by default
+
+# 7. Start the server
 npm run dev        # development (auto-restart)
 npm start          # production
 ```
 
-The server will listen on port 3001 by default and start the sync scheduler automatically.
+The server listens on port 3001 by default.  It serves the `app/` frontend at `/`,
+media files at `/media/`, IDX routes at `/api/idx/`, and the platform API at `/v2/`.
+
+## Runtime topology (self-hosted)
+
+```
+Single VPS (Hetzner / Railway / Render / bare metal)
+├── Node.js / Fastify  — serves everything on port 3001
+│   ├── / (app/ static files)
+│   ├── /media/* (local photo storage)
+│   ├── /api/idx/* (IDX search, verify, listing detail)
+│   └── /v2/* (platform API)
+├── Ollama sidecar     — local LLM for AI features (no API key required)
+├── PostgreSQL         — PostGIS + pgvector (fully self-hostable)
+└── SMTP server        — Postfix or any SMTP (no Sendgrid required)
+```
 
 ## Deployment
 
