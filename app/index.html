@@ -790,10 +790,10 @@
 
           const formData = new FormData(propertySearchForm);
           const params = new URLSearchParams();
-          const DIGITS_ONLY_REGEX = /^\d+$/;
+          const digitsOnlyRegex = /^\d+$/;
           const getFieldValue = (name) => (formData.get(name) || '').toString().trim();
           const sanitizeLocationInput = (value) =>
-            value.replace(/[^a-zA-Z0-9\s.'&-]/g, '').replace(/\s+/g, ' ').trim();
+            value.replace(/[^a-zA-Z0-9\s,]/g, '').replace(/\s+/g, ' ').trim();
 
           const location = getFieldValue('location');
           const price = getFieldValue('price');
@@ -813,8 +813,11 @@
             if (selectedPrice.max) params.set('idx-q-MaxPrice', String(selectedPrice.max));
           }
 
-          if (DIGITS_ONLY_REGEX.test(beds)) {
-            params.set('idx-q-BedsMin', beds);
+          if (digitsOnlyRegex.test(beds)) {
+            const bedsMin = Number.parseInt(beds, 10);
+            if (bedsMin >= 1 && bedsMin <= 20) {
+              params.set('idx-q-BedsMin', String(bedsMin));
+            }
           }
 
           if (homeType && homeTypeMap[homeType]) {
