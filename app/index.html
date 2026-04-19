@@ -791,9 +791,10 @@
           const formData = new FormData(propertySearchForm);
           const params = new URLSearchParams();
           const digitsOnlyRegex = /^\d+$/;
+          const maxBedrooms = 20;
           const getFieldValue = (name) => (formData.get(name) || '').toString().trim();
           const sanitizeLocationInput = (value) =>
-            value.replace(/[^a-zA-Z0-9\s,]/g, '').replace(/\s+/g, ' ').trim();
+            value.replace(/[^a-zA-Z0-9\s,\-'.]/g, '').replace(/\s+/g, ' ').trim();
 
           const location = getFieldValue('location');
           const price = getFieldValue('price');
@@ -815,7 +816,7 @@
 
           if (digitsOnlyRegex.test(beds)) {
             const bedsMin = Number.parseInt(beds, 10);
-            if (bedsMin >= 1 && bedsMin <= 20) {
+            if (bedsMin >= 1 && bedsMin <= maxBedrooms) {
               params.set('idx-q-BedsMin', String(bedsMin));
             }
           }
