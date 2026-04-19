@@ -5,7 +5,7 @@ This project is a static site. Deploy the `app/` folder as your web root.
 ## 1) Pre-deployment production checklist
 
 1. Update search form endpoint in `app/index.html`:
-   - `action="https://www.donnasellslv.com/search"` (or your IDX/MLS endpoint)
+   - `action="https://www.donnasellslv.com/idx/results"` (or your IDX/MLS endpoint)
 2. Replace the contact form endpoint:
    - `action="https://formspree.io/f/YOUR_FORM_ID"` with your live form provider URL
 3. Confirm canonical + social URL values:
