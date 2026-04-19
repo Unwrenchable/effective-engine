@@ -6,6 +6,7 @@
   --muted: #b7becd;
   --accent: #d7b273;
   --line: #2b3345;
+  --ink-dark: #10141e;
   --nav-h: 64px;
 }
 
@@ -41,7 +42,7 @@ img {
   top: 0;
   z-index: 9999;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   font-weight: 700;
   padding: 0.6rem 1.2rem;
   text-decoration: none;
@@ -236,7 +237,7 @@ h1 {
 .cta {
   display: inline-block;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   text-decoration: none;
   padding: 0.9rem 1.75rem;
   border-radius: 999px;
@@ -264,7 +265,7 @@ h1 {
 
 .cta-secondary:hover {
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
 }
 
 /* ─── Main layout ────────────────────────────────────────────────── */
@@ -347,7 +348,7 @@ h2 {
   border-radius: 9px;
   border: none;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 700;
@@ -429,7 +430,7 @@ h2 {
 
 .listing-cta:hover {
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
 }
 
 /* ─── Experience + communities ────────────────────────────────────── */
@@ -571,7 +572,7 @@ h2 {
 
 .social-links a:hover {
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   border-color: var(--accent);
 }
 
@@ -632,7 +633,7 @@ h2 {
 .btn-submit {
   align-self: flex-start;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   border: none;
   padding: 0.9rem 2.25rem;
   border-radius: 999px;
