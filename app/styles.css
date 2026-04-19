@@ -8,6 +8,7 @@
   --line: #2b3345;
   --ink-dark: #10141e;
   --nav-h: 64px;
+  --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 }
 
 /* ─── Reset + base ───────────────────────────────────────────────── */
@@ -222,9 +223,11 @@ img {
 
 h1 {
   margin: 0 0 1rem;
-  font-size: clamp(2.2rem, 5vw, 4rem);
-  line-height: 1.15;
+  font-family: var(--serif);
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  line-height: 1.1;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .lead {
@@ -291,8 +294,10 @@ section[id] {
 
 h2 {
   margin: 0 0 0.5rem;
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .section-intro {
@@ -719,6 +724,98 @@ h2 {
 /* ─── Inline link style ──────────────────────────────────────────── */
 p a {
   color: var(--accent);
+}
+
+/* ─── Listing badge + neighborhood tag ──────────────────────────── */
+.listing-img-wrap {
+  position: relative;
+}
+
+.listing-badge {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.badge-active {
+  background: #1a6b3c;
+  color: #e3f5eb;
+}
+
+.badge-new {
+  background: var(--accent);
+  color: var(--ink-dark);
+}
+
+.listing-neighborhood {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.listings-note {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ─── Market insights ────────────────────────────────────────────── */
+.market-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.market-stat {
+  background: #0b101b;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+}
+
+.market-stat strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 2rem;
+  color: var(--accent);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
+}
+
+.market-stat span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.market-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ─── Footer phone ───────────────────────────────────────────────── */
+.footer-phone {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.footer-phone:hover {
+  opacity: 0.8;
 }
 
 /* ─── Print ──────────────────────────────────────────────────────── */
