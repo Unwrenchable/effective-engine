@@ -818,7 +818,7 @@
               : '<div class="idx-no-photo" aria-hidden="true"></div>';
 
             return `<article class="listing-card idx-listing-card">
-              <a href="/api/idx/listing/${escapeHtml(mlsId)}" class="listing-photo-link" aria-label="View ${escapeHtml(address)}">${imgTag}</a>
+              <a href="/api/idx/listing/${encodeURIComponent(mlsId)}" class="listing-photo-link" aria-label="View ${escapeHtml(address)}">${imgTag}</a>
               <div class="listing-info">
                 <p class="listing-price">${escapeHtml(price)}</p>
                 <p class="listing-address">${escapeHtml(address)}</p>

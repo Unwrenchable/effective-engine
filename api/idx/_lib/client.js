@@ -37,7 +37,8 @@ async function getBearerToken() {
   }
 
   const now = Date.now();
-  if (_tokenCache && _tokenCache.expires_at > now + 60_000) {
+  const bufferMs = Math.max(30_000, ((_tokenCache?.expires_at ?? 0) - now) * 0.1);
+  if (_tokenCache && _tokenCache.expires_at > now + bufferMs) {
     return _tokenCache.access_token;
   }
 
