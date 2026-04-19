@@ -910,3 +910,132 @@ p a {
     border-color: #ddd;
   }
 }
+
+/* ─── IDX search results ─────────────────────────────────────────── */
+.idx-results-section {
+  margin-top: 1.5rem;
+}
+
+.idx-results-heading {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  margin: 0 0 1.25rem;
+}
+
+.idx-count {
+  font-size: 1rem;
+  color: var(--muted);
+  font-family: "Inter", sans-serif;
+}
+
+.listings-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.idx-listing-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0f1420;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.idx-listing-card:hover {
+  border-color: color-mix(in hsl, var(--accent) 40%, var(--line));
+  transform: translateY(-2px);
+}
+
+.idx-listing-card .listing-photo-link {
+  display: block;
+  height: 200px;
+  overflow: hidden;
+}
+
+.idx-listing-card .listing-photo-link img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.idx-listing-card:hover .listing-photo-link img {
+  transform: scale(1.03);
+}
+
+.idx-no-photo {
+  width: 100%;
+  height: 200px;
+  background: var(--panel);
+}
+
+.idx-listing-card .listing-info {
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.idx-listing-card .listing-address {
+  margin: 0 0 0.2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.idx-listing-card .listing-city {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.35rem;
+}
+
+.idx-listing-card .listing-details {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.35rem;
+}
+
+.idx-listing-card .listing-attribution {
+  margin-top: auto;
+  padding-top: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+.idx-disclaimer {
+  margin-top: 1.25rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.idx-loading,
+.idx-error,
+.idx-no-results {
+  padding: 1.5rem 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.idx-error {
+  color: #e07070;
+}
+
+@media (prefers-color-scheme: light) {
+  .idx-listing-card {
+    background: #fff;
+    border-color: #ddd;
+  }
+
+  .idx-no-photo {
+    background: #f0f0f0;
+  }
+
+  .idx-listing-card .listing-attribution,
+  .idx-disclaimer {
+    color: #666;
+  }
+}
