@@ -6,7 +6,9 @@
   --muted: #b7becd;
   --accent: #d7b273;
   --line: #2b3345;
+  --ink-dark: #10141e;
   --nav-h: 64px;
+  --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 }
 
 /* ─── Reset + base ───────────────────────────────────────────────── */
@@ -41,7 +43,7 @@ img {
   top: 0;
   z-index: 9999;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   font-weight: 700;
   padding: 0.6rem 1.2rem;
   text-decoration: none;
@@ -221,9 +223,11 @@ img {
 
 h1 {
   margin: 0 0 1rem;
-  font-size: clamp(2.2rem, 5vw, 4rem);
-  line-height: 1.15;
+  font-family: var(--serif);
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  line-height: 1.1;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .lead {
@@ -236,7 +240,7 @@ h1 {
 .cta {
   display: inline-block;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   text-decoration: none;
   padding: 0.9rem 1.75rem;
   border-radius: 999px;
@@ -248,6 +252,23 @@ h1 {
 .cta:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cta-secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.cta-secondary:hover {
+  background: var(--accent);
+  color: var(--ink-dark);
 }
 
 /* ─── Main layout ────────────────────────────────────────────────── */
@@ -273,8 +294,10 @@ section[id] {
 
 h2 {
   margin: 0 0 0.5rem;
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .section-intro {
@@ -330,7 +353,7 @@ h2 {
   border-radius: 9px;
   border: none;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 700;
@@ -412,7 +435,77 @@ h2 {
 
 .listing-cta:hover {
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
+}
+
+/* ─── Experience + communities ────────────────────────────────────── */
+.experience-grid,
+.community-grid,
+.testimonial-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.experience-item,
+.community-card,
+.testimonial {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0f1420;
+  padding: 1.1rem 1.2rem;
+}
+
+.experience-item h3,
+.community-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.experience-item p,
+.community-card p,
+.testimonial p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.testimonial {
+  margin: 0;
+}
+
+.testimonial cite {
+  display: block;
+  margin-top: 0.75rem;
+  color: var(--accent);
+  font-style: normal;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ─── FAQ ─────────────────────────────────────────────────────────── */
+.faq-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.faq-list details {
+  background: #0b101b;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+
+.faq-list summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.faq-list p {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 /* ─── About ──────────────────────────────────────────────────────── */
@@ -484,7 +577,7 @@ h2 {
 
 .social-links a:hover {
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   border-color: var(--accent);
 }
 
@@ -545,7 +638,7 @@ h2 {
 .btn-submit {
   align-self: flex-start;
   background: var(--accent);
-  color: #10141e;
+  color: var(--ink-dark);
   border: none;
   padding: 0.9rem 2.25rem;
   border-radius: 999px;
@@ -628,9 +721,111 @@ h2 {
   margin: 0;
 }
 
-/* ─── Inline link style ──────────────────────────────────────────── */
+/* ─── Honeypot field (bot trap) ──────────────────────────────────── */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
 p a {
   color: var(--accent);
+}
+
+/* ─── Listing badge + neighborhood tag ──────────────────────────── */
+.listing-img-wrap {
+  position: relative;
+}
+
+.listing-badge {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.badge-active {
+  background: #1a6b3c;
+  color: #e3f5eb;
+}
+
+.badge-new {
+  background: var(--accent);
+  color: var(--ink-dark);
+}
+
+.listing-neighborhood {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.listings-note {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ─── Market insights ────────────────────────────────────────────── */
+.market-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.market-stat {
+  background: #0b101b;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+}
+
+.market-stat strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 2rem;
+  color: var(--accent);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
+}
+
+.market-stat span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.market-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ─── Footer phone ───────────────────────────────────────────────── */
+.footer-phone {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.footer-phone:hover {
+  opacity: 0.8;
 }
 
 /* ─── Print ──────────────────────────────────────────────────────── */

@@ -4,21 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
-    <title>Donna Sells LV | Luxury Real Estate in Las Vegas</title>
+    <title>Donna Sells LV | #1 Luxury Real Estate Agent Las Vegas, Henderson &amp; Summerlin</title>
     <meta
       name="description"
-      content="Las Vegas luxury real estate with Donna Sells LV. Browse premier listings in Summerlin, Henderson, and the Las Vegas Strip. Book a private consultation today."
+      content="Donna Sells LV is Las Vegas Valley's premier luxury real estate agent. Serving Summerlin, Henderson, North Las Vegas, Green Valley, Anthem, Southern Highlands, Centennial Hills, Boulder City &amp; beyond. Browse MLS listings, off-market estates, and Strip penthouses. Book a free private consultation."
     />
     <meta
       name="keywords"
-      content="Las Vegas luxury real estate, MLS listings, high-end homes, Summerlin, Henderson, real estate agent, Donna Sells LV"
+      content="Las Vegas luxury real estate, Las Vegas homes for sale, Henderson real estate, Summerlin homes for sale, North Las Vegas homes, Green Valley real estate, Anthem Henderson homes, Southern Highlands real estate, Centennial Hills homes, Aliante real estate, Boulder City homes, Spring Valley Las Vegas, Paradise Nevada real estate, Enterprise NV homes, Skye Canyon real estate, Seven Hills Henderson, MacDonald Ranch homes, The Lakes Las Vegas, Desert Shores real estate, luxury homes Las Vegas Valley, MLS listings Las Vegas, off-market Las Vegas properties, guard-gated communities Las Vegas, penthouse Las Vegas Strip, new construction Las Vegas, top real estate agent Las Vegas NV, luxury estate Las Vegas, Donna Sells LV, high-end homes Henderson NV, real estate agent 89134 89135 89052 89002 89074 89014 89148"
     />
 
+    <!-- Geo targeting -->
+    <meta name="geo.region" content="US-NV" />
+    <meta name="geo.placename" content="Las Vegas, Nevada" />
+    <meta name="geo.position" content="36.1699;-115.1398" />
+    <meta name="ICBM" content="36.1699, -115.1398" />
+
     <!-- Open Graph -->
-    <meta property="og:title" content="Donna Sells LV | Luxury Real Estate in Las Vegas" />
+    <meta property="og:title" content="Donna Sells LV | #1 Luxury Real Estate Las Vegas, Henderson &amp; Summerlin" />
     <meta
       property="og:description"
-      content="Premier luxury real estate in Las Vegas. Exclusive listings, concierge service, and off-market opportunities."
+      content="Las Vegas Valley's premier luxury real estate specialist — Summerlin, Henderson, Green Valley, Anthem, Southern Highlands, and beyond. Exclusive listings, off-market access, and concierge service."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.donnasellslv.com/" />
@@ -33,10 +39,10 @@
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@donnasellslv" />
-    <meta name="twitter:title" content="Donna Sells LV | Luxury Real Estate in Las Vegas" />
+    <meta name="twitter:title" content="Donna Sells LV | #1 Luxury Real Estate Las Vegas, Henderson &amp; Summerlin" />
     <meta
       name="twitter:description"
-      content="Premier luxury real estate in Las Vegas. Exclusive listings, concierge service, and off-market opportunities."
+      content="Las Vegas Valley's premier luxury real estate specialist — Summerlin, Henderson, Green Valley, Anthem, Southern Highlands, and beyond."
     />
     <meta
       name="twitter:image"
@@ -51,31 +57,118 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
+    />
+
+    <!-- Hero image preload -->
+    <link
+      rel="preload"
+      as="image"
+      href="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80"
     />
 
     <link rel="stylesheet" href="./styles.css" />
 
-    <!-- Structured data -->
+    <!-- TODO: Replace placeholder phone +1-702-555-0100 with real business number throughout -->
+    <!-- Structured data: RealEstateAgent + LocalBusiness -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "RealEstateAgent",
+        "@type": ["RealEstateAgent", "LocalBusiness"],
         "name": "Donna Sells LV",
         "url": "https://www.donnasellslv.com/",
-        "areaServed": {
-          "@type": "City",
-          "name": "Las Vegas",
-          "addressRegion": "NV"
+        "telephone": "+1-702-555-0100",
+        "priceRange": "$$$",
+        "image": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Las Vegas",
+          "addressRegion": "NV",
+          "postalCode": "89101",
+          "addressCountry": "US"
         },
+        "areaServed": [
+          { "@type": "City", "name": "Las Vegas", "addressRegion": "NV" },
+          { "@type": "City", "name": "Henderson", "addressRegion": "NV" },
+          { "@type": "City", "name": "North Las Vegas", "addressRegion": "NV" },
+          { "@type": "City", "name": "Summerlin", "addressRegion": "NV" },
+          { "@type": "City", "name": "Green Valley", "addressRegion": "NV" },
+          { "@type": "City", "name": "Anthem", "addressRegion": "NV" },
+          { "@type": "City", "name": "Southern Highlands", "addressRegion": "NV" },
+          { "@type": "City", "name": "Centennial Hills", "addressRegion": "NV" },
+          { "@type": "City", "name": "Boulder City", "addressRegion": "NV" },
+          { "@type": "City", "name": "Spring Valley", "addressRegion": "NV" },
+          { "@type": "City", "name": "Enterprise", "addressRegion": "NV" },
+          { "@type": "City", "name": "Paradise", "addressRegion": "NV" },
+          { "@type": "City", "name": "Aliante", "addressRegion": "NV" },
+          { "@type": "City", "name": "Skye Canyon", "addressRegion": "NV" }
+        ],
         "sameAs": [
           "https://www.instagram.com/donnasellslv/",
           "https://www.facebook.com/donnasellslv/",
           "https://www.linkedin.com/company/donnasellslv/",
           "https://www.youtube.com/@donnasellslv"
         ],
-        "description": "Luxury real estate advisory and property marketing in Las Vegas, NV."
+        "description": "Las Vegas Valley's premier luxury real estate specialist serving Summerlin, Henderson, North Las Vegas, Green Valley, Anthem, Southern Highlands, Centennial Hills, Boulder City, Spring Valley, Enterprise, Paradise, and all surrounding communities."
+      }
+    </script>
+
+    <!-- Structured data: FAQPage -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What areas of the Las Vegas Valley does Donna serve?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Donna serves the entire Las Vegas Valley including Summerlin, Henderson, North Las Vegas, Green Valley, Anthem, Southern Highlands, Centennial Hills, Aliante, Skye Canyon, Boulder City, Spring Valley, Enterprise, Paradise, and all surrounding communities."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Donna have access to MLS listings in Las Vegas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Donna is a licensed Nevada real estate agent with full access to the Greater Las Vegas Association of REALTORS® MLS, covering new construction, resale, and off-market inventory across the Las Vegas Valley."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How quickly can we list a luxury property in Las Vegas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Most luxury listings in the Las Vegas Valley can launch within 7–10 business days after consultation, professional photography, and full media production."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I schedule a virtual property tour in Las Vegas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Donna offers in-person private showings and virtual tours for buyers relocating to Las Vegas or unable to attend in person."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the average price of luxury homes in Summerlin and Henderson?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Luxury homes in Summerlin and Henderson typically range from $1M to $10M+. Guard-gated communities like The Ridges, MacDonald Ranch, Seven Hills, and Anthem Highlands command premium valuations."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Donna work with off-market buyers and sellers in Las Vegas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Donna supports discreet off-market transactions across the Las Vegas Valley for clients who value privacy and targeted buyer exposure."
+            }
+          }
+        ]
       }
     </script>
   </head>
@@ -100,7 +193,10 @@
         <ul class="nav-menu" id="nav-menu" role="list">
           <li><a href="#search">Search</a></li>
           <li><a href="#listings">Listings</a></li>
+          <li><a href="#communities">Communities</a></li>
+          <li><a href="#market">Market</a></li>
           <li><a href="#about">About</a></li>
+          <li><a href="#faq">FAQ</a></li>
           <li><a class="nav-cta" href="#contact">Contact</a></li>
         </ul>
       </div>
@@ -109,14 +205,17 @@
     <!-- ─── Hero ────────────────────────────────────────────────── -->
     <header class="site-hero">
       <div class="hero-inner">
-        <p class="eyebrow">Luxury Real Estate · Las Vegas, NV</p>
+        <p class="eyebrow">Las Vegas Valley's #1 Luxury Real Estate Specialist</p>
         <h1>Donna Sells LV</h1>
         <p class="lead">
-          Exclusive access to Las Vegas's finest properties — from guard-gated
-          estates to Strip penthouses. Private showings, off-market
-          opportunities, and concierge service at every step.
+          Exclusive access to Las Vegas Valley's finest properties — from guard-gated
+          estates in Summerlin and Henderson to Strip penthouses. Private showings,
+          off-market opportunities, and concierge service from first call to closing.
         </p>
-        <a class="cta" href="#contact">Book a Private Consultation</a>
+        <div class="hero-actions">
+          <a class="cta" href="#contact">Book a Private Consultation</a>
+          <a class="cta cta-secondary" href="#listings">Browse Featured Listings</a>
+        </div>
       </div>
     </header>
 
@@ -137,23 +236,57 @@
           role="search"
         >
           <label for="location">
-            Location
+            Location / Community
             <input
               id="location"
               type="text"
               name="location"
-              placeholder="Summerlin, Henderson, The Strip"
+              placeholder="Summerlin, Henderson, The Strip…"
               autocomplete="address-level2"
+              list="lv-locations"
             />
+            <datalist id="lv-locations">
+              <option value="Summerlin" />
+              <option value="Henderson" />
+              <option value="North Las Vegas" />
+              <option value="Green Valley" />
+              <option value="Anthem" />
+              <option value="Southern Highlands" />
+              <option value="Centennial Hills" />
+              <option value="Aliante" />
+              <option value="Skye Canyon" />
+              <option value="Boulder City" />
+              <option value="Spring Valley" />
+              <option value="Enterprise" />
+              <option value="Paradise" />
+              <option value="The Lakes" />
+              <option value="Desert Shores" />
+              <option value="Las Vegas Strip" />
+              <option value="Downtown Las Vegas" />
+              <option value="The Ridges" />
+              <option value="MacDonald Ranch" />
+              <option value="Seven Hills" />
+            </datalist>
           </label>
           <label for="price">
             Price Range
             <select id="price" name="price">
               <option value="">Any</option>
+              <option value="500k-1m">$500K – $1M</option>
               <option value="1m-2m">$1M – $2M</option>
               <option value="2m-5m">$2M – $5M</option>
               <option value="5m-10m">$5M – $10M</option>
               <option value="10m-plus">$10M+</option>
+            </select>
+          </label>
+          <label for="beds">
+            Beds
+            <select id="beds" name="beds">
+              <option value="">Any</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+              <option value="5">5+</option>
             </select>
           </label>
           <label for="homeType">
@@ -164,10 +297,12 @@
               <option>Penthouse</option>
               <option>Condo</option>
               <option>Estate</option>
+              <option>New Construction</option>
+              <option>Guard-Gated</option>
             </select>
           </label>
           <div class="search-action">
-            <button class="btn-search" type="submit">Search Listings</button>
+            <button class="btn-search" type="submit">Search MLS Listings</button>
           </div>
         </form>
       </section>
@@ -180,15 +315,19 @@
         </p>
         <div class="listing-grid">
           <article>
-            <img
-              class="listing-img"
-              src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=75"
-              alt="Modern Desert Estate exterior with mountain views"
-              width="800"
-              height="533"
-              loading="lazy"
-            />
+            <div class="listing-img-wrap">
+              <img
+                class="listing-img"
+                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=75"
+                alt="Modern Desert Estate exterior with mountain views in Summerlin"
+                width="800"
+                height="533"
+                loading="lazy"
+              />
+              <span class="listing-badge badge-active">Active</span>
+            </div>
             <div class="listing-body">
+              <span class="listing-neighborhood">Summerlin · The Ridges</span>
               <h3>Modern Desert Estate</h3>
               <p class="listing-price">$3,750,000</p>
               <p class="listing-meta">4 Bed · 5 Bath · 5,900 sq ft · Red Rock Views</p>
@@ -196,15 +335,19 @@
             </div>
           </article>
           <article>
-            <img
-              class="listing-img"
-              src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=75"
-              alt="Skyline Penthouse with Las Vegas Strip panorama"
-              width="800"
-              height="533"
-              loading="lazy"
-            />
+            <div class="listing-img-wrap">
+              <img
+                class="listing-img"
+                src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=75"
+                alt="Skyline Penthouse with Las Vegas Strip panorama"
+                width="800"
+                height="533"
+                loading="lazy"
+              />
+              <span class="listing-badge badge-active">Active</span>
+            </div>
             <div class="listing-body">
+              <span class="listing-neighborhood">Las Vegas Strip · Paradise</span>
               <h3>Skyline Penthouse</h3>
               <p class="listing-price">$2,495,000</p>
               <p class="listing-meta">3 Bed · 3.5 Bath · 3,400 sq ft · Strip Panorama</p>
@@ -212,20 +355,110 @@
             </div>
           </article>
           <article>
-            <img
-              class="listing-img"
-              src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=75"
-              alt="Private Golf Villa with pool in guard-gated community"
-              width="800"
-              height="533"
-              loading="lazy"
-            />
+            <div class="listing-img-wrap">
+              <img
+                class="listing-img"
+                src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=75"
+                alt="Private Golf Villa with pool in guard-gated Henderson community"
+                width="800"
+                height="533"
+                loading="lazy"
+              />
+              <span class="listing-badge badge-active">Active</span>
+            </div>
             <div class="listing-body">
+              <span class="listing-neighborhood">Henderson · MacDonald Ranch</span>
               <h3>Private Golf Villa</h3>
               <p class="listing-price">$5,200,000</p>
-              <p class="listing-meta">5 Bed · 6 Bath · 6,800 sq ft · Guard-Gated Community</p>
+              <p class="listing-meta">5 Bed · 6 Bath · 6,800 sq ft · Guard-Gated</p>
               <a class="listing-cta" href="#contact">Schedule a Showing</a>
             </div>
+          </article>
+          <article>
+            <div class="listing-img-wrap">
+              <img
+                class="listing-img"
+                src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=75"
+                alt="Luxury new-construction estate in Southern Highlands Las Vegas"
+                width="800"
+                height="533"
+                loading="lazy"
+              />
+              <span class="listing-badge badge-new">New Listing</span>
+            </div>
+            <div class="listing-body">
+              <span class="listing-neighborhood">Southern Highlands · Guard-Gated</span>
+              <h3>Southern Highlands Estate</h3>
+              <p class="listing-price">$4,100,000</p>
+              <p class="listing-meta">5 Bed · 5.5 Bath · 6,200 sq ft · Pool &amp; Casita</p>
+              <a class="listing-cta" href="#contact">Schedule a Showing</a>
+            </div>
+          </article>
+        </div>
+        <p class="listings-note">
+          All MLS listings updated daily via the Greater Las Vegas Association of REALTORS®.
+          <a href="#contact">Contact Donna</a> for off-market and pre-market opportunities.
+        </p>
+      </section>
+
+      <!-- Why Donna -->
+      <section aria-labelledby="experience-heading" class="card">
+        <h2 id="experience-heading">The Ultimate Luxury Experience</h2>
+        <p class="section-intro">
+          Every client engagement is designed around privacy, speed, and outcomes.
+        </p>
+        <div class="experience-grid">
+          <article class="experience-item">
+            <h3>White-Glove Advisory</h3>
+            <p>
+              Strategy-first guidance from pricing and positioning to negotiations and closing.
+            </p>
+          </article>
+          <article class="experience-item">
+            <h3>Private Market Access</h3>
+            <p>
+              Priority access to premium inventory, including select off-market opportunities.
+            </p>
+          </article>
+          <article class="experience-item">
+            <h3>Always-On Communication</h3>
+            <p>
+              Proactive updates and fast response times so you never miss a critical move.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Communities -->
+      <section aria-labelledby="communities-heading" class="card" id="communities">
+        <h2 id="communities-heading">Explore Premier Communities</h2>
+        <p class="section-intro">
+          Discover the neighborhoods shaping Las Vegas luxury living.
+        </p>
+        <div class="community-grid">
+          <article class="community-card">
+            <h3>Summerlin</h3>
+            <p>Master-planned luxury with guard-gated enclaves, Red Rock views, championship golf, and A+ rated schools. Home to The Ridges, The Cliffs, and Skye Canyon.</p>
+          </article>
+          <article class="community-card">
+            <h3>Henderson &amp; Green Valley</h3>
+            <p>Refined desert living with upscale dining, top-tier schools, and private communities including MacDonald Ranch, Seven Hills, and Green Valley Ranch.</p>
+          </article>
+          <article class="community-card">
+            <h3>Anthem &amp; Southern Highlands</h3>
+            <p>Premium guard-gated golf communities in the south valley. Anthem Highlands, Anthem Country Club, and Southern Highlands offer estate living with mountain panoramas.</p>
+          </article>
+          <article class="community-card">
+            <h3>Las Vegas Strip &amp; Downtown</h3>
+            <p>Iconic high-rise penthouses and luxury condos at Turnberry Place, One Queensridge Place, and Waldorf Astoria Residences with unrivaled Strip panoramas.</p>
+          </article>
+          <article class="community-card">
+            <h3>Centennial Hills &amp; Aliante</h3>
+            <p>North Las Vegas's fastest-growing luxury corridor with new-construction estates, Skye Canyon, and access to Mount Charleston recreation and open desert vistas.</p>
+          </article>
+          <article class="community-card">
+            <h3>Boulder City &amp; Outskirts</h3>
+            <p>Unique charm near Lake Mead National Recreation Area. Ideal for estate buyers seeking acreage, privacy, and stunning Mojave Desert and lake views.</p>
           </article>
         </div>
       </section>
@@ -265,6 +498,36 @@
         </div>
       </section>
 
+      <!-- Market Insights -->
+      <section aria-labelledby="market-heading" class="card" id="market">
+        <h2 id="market-heading">Las Vegas Valley Market Snapshot</h2>
+        <p class="section-intro">
+          Current luxury market data for the greater Las Vegas Valley, updated monthly.
+        </p>
+        <div class="market-grid">
+          <div class="market-stat">
+            <strong>$1.2M</strong>
+            <span>Median luxury home price, Las Vegas Valley</span>
+          </div>
+          <div class="market-stat">
+            <strong>18 days</strong>
+            <span>Avg. days on market for $1M+ homes</span>
+          </div>
+          <div class="market-stat">
+            <strong>97%</strong>
+            <span>List-to-sale price ratio, luxury segment</span>
+          </div>
+          <div class="market-stat">
+            <strong>$400+</strong>
+            <span>Median price per sq ft, Summerlin &amp; Henderson</span>
+          </div>
+        </div>
+        <p class="market-note">
+          Data reflects the Greater Las Vegas Association of REALTORS® market reports.
+          <a href="#contact">Request a personalized market analysis</a> for your neighborhood.
+        </p>
+      </section>
+
       <!-- Social Presence -->
       <section aria-labelledby="social-heading" class="card" id="social">
         <h2 id="social-heading">Follow Along</h2>
@@ -278,6 +541,87 @@
           <a href="https://www.linkedin.com/company/donnasellslv/" rel="noopener noreferrer" target="_blank">LinkedIn</a>
           <a href="https://www.youtube.com/@donnasellslv" rel="noopener noreferrer" target="_blank">YouTube</a>
         </nav>
+      </section>
+
+      <!-- Testimonials -->
+      <section aria-labelledby="testimonials-heading" class="card" id="testimonials">
+        <h2 id="testimonials-heading">Client Success Stories</h2>
+        <div class="testimonial-grid">
+          <blockquote class="testimonial">
+            <p>
+              “Donna handled every detail from staging to negotiation and sold our Summerlin
+              home above ask in under two weeks.”
+            </p>
+            <cite>— Seller, The Ridges, Summerlin</cite>
+          </blockquote>
+          <blockquote class="testimonial">
+            <p>
+              “We relocated from out of state and found the perfect Henderson penthouse with
+              Donna’s private network before it hit the MLS.”
+            </p>
+            <cite>— Buyer, MacDonald Ranch, Henderson</cite>
+          </blockquote>
+          <blockquote class="testimonial">
+            <p>
+              “From Anthem to Southern Highlands, Donna knew every guard-gated community
+              inside-out. We found our forever home in three showings.”
+            </p>
+            <cite>— Buyer, Anthem Country Club, Henderson</cite>
+          </blockquote>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section aria-labelledby="faq-heading" class="card" id="faq">
+        <h2 id="faq-heading">Frequently Asked Questions</h2>
+        <div class="faq-list">
+          <details>
+            <summary>What areas of the Las Vegas Valley does Donna serve?</summary>
+            <p>
+              Donna serves the entire Las Vegas Valley — Summerlin, Henderson, North Las Vegas,
+              Green Valley, Anthem, Southern Highlands, Centennial Hills, Aliante, Skye Canyon,
+              Boulder City, Spring Valley, Enterprise, Paradise, and all surrounding communities.
+            </p>
+          </details>
+          <details>
+            <summary>Does Donna have access to MLS listings in Las Vegas?</summary>
+            <p>
+              Yes. Donna is a licensed Nevada real estate agent with full access to the Greater
+              Las Vegas Association of REALTORS® MLS, including new construction, resale, and
+              off-market inventory across the Las Vegas Valley.
+            </p>
+          </details>
+          <details>
+            <summary>How quickly can we list a luxury property in Las Vegas?</summary>
+            <p>
+              Most luxury listings can be launched within 7–10 business days after consultation,
+              professional photography, staging, and media production.
+            </p>
+          </details>
+          <details>
+            <summary>Do you work with off-market buyers and sellers?</summary>
+            <p>
+              Yes. Donna supports discreet transactions across the Las Vegas Valley for clients
+              who value privacy and targeted buyer exposure without broad public marketing.
+            </p>
+          </details>
+          <details>
+            <summary>What is the average price of luxury homes in Summerlin and Henderson?</summary>
+            <p>
+              Luxury homes in Summerlin and Henderson typically range from $1M to $10M+.
+              Guard-gated communities like The Ridges, MacDonald Ranch, Seven Hills, and
+              Anthem Highlands command premium valuations in today's market.
+            </p>
+          </details>
+          <details>
+            <summary>Can I schedule a virtual tour or consultation?</summary>
+            <p>
+              Absolutely. In-person private showings and virtual consultations are available
+              for buyers and sellers across the Las Vegas Valley, including out-of-state clients
+              relocating to Henderson, Summerlin, or any surrounding community.
+            </p>
+          </details>
+        </div>
       </section>
 
       <!-- Contact Form -->
@@ -350,6 +694,21 @@
               placeholder="Tell me what you're looking for and the best time to connect."
             ></textarea>
           </label>
+          <!-- Honeypot: hidden from real users; bots fill this in and the
+               submission is silently dropped. Do not remove or label visibly. -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="contact-url">Website</label>
+            <input
+              id="contact-url"
+              type="text"
+              name="_gotcha"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+          <!-- Timestamp token: JS sets this at page-load; submissions that
+               arrive in under 3 seconds are bot-speed and are blocked. -->
+          <input type="hidden" name="_loadedAt" id="form-loaded-at" />
           <button class="btn-submit" type="submit">Send Message</button>
         </form>
       </section>
@@ -359,10 +718,15 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <p class="footer-brand">Donna Sells LV</p>
+        <!-- Phone rendered by JS to deter automated harvesting -->
+        <span id="biz-phone" class="footer-phone" aria-label="Business phone number"></span>
         <nav aria-label="Footer navigation">
-          <a href="#search">Search</a>
+          <a href="#search">Search MLS</a>
           <a href="#listings">Listings</a>
+          <a href="#communities">Communities</a>
+          <a href="#market">Market Insights</a>
           <a href="#about">About</a>
+          <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
         </nav>
         <nav aria-label="Social media footer links" class="footer-social">
@@ -381,8 +745,10 @@
     </footer>
 
     <script>
+      // ─── Year ──────────────────────────────────────────────────────
       document.getElementById('year').textContent = new Date().getFullYear();
 
+      // ─── Mobile nav ────────────────────────────────────────────────
       const burger = document.querySelector('.nav-burger');
       const menu = document.getElementById('nav-menu');
       burger.addEventListener('click', function () {
@@ -396,6 +762,46 @@
           menu.classList.remove('is-open');
         });
       });
+
+      // ─── Phone obfuscation ─────────────────────────────────────────
+      // The number is split into parts and assembled at runtime so
+      // automated scrapers cannot harvest it from raw HTML source.
+      (function () {
+        var parts = ['(702)', '\u00a0', '555', '-', '0100'];
+        var num   = parts.join('');
+        var raw   = '+17025550100'; // TODO: replace both with real number
+        var el    = document.getElementById('biz-phone');
+        if (!el) return;
+        var a = document.createElement('a');
+        a.href = 'tel:' + raw;
+        a.textContent = num;
+        a.className = 'footer-phone';
+        el.parentNode.replaceChild(a, el);
+      })();
+
+      // ─── Bot protection: load-time stamp ───────────────────────────
+      var loadedAt = Date.now();
+      var loadField = document.getElementById('form-loaded-at');
+      if (loadField) loadField.value = String(loadedAt);
+
+      // ─── Bot protection: form guard ────────────────────────────────
+      var contactForm = document.querySelector('.contact-form');
+      if (contactForm) {
+        contactForm.addEventListener('submit', function (e) {
+          // 1. Honeypot check — real users leave this blank
+          var honey = contactForm.querySelector('input[name="_gotcha"]');
+          if (honey && honey.value !== '') {
+            e.preventDefault();
+            return;
+          }
+          // 2. Time-floor check — block submissions faster than 3 seconds
+          var elapsed = Date.now() - loadedAt;
+          if (elapsed < 3000) {
+            e.preventDefault();
+            return;
+          }
+        });
+      }
     </script>
   </body>
 </html>

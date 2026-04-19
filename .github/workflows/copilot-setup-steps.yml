@@ -1,0 +1,55 @@
+name: "Copilot Setup Steps"
+
+# Run when this file changes, or manually from the Actions tab
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # This job MUST be named copilot-setup-steps for Copilot to pick it up
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Validate HTML with the W3C Nu validator (offline via vnu-jar)
+      - name: Set up Java (for Nu HTML checker)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Install lightweight Python tooling for local dev tasks
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python linting utilities
+        run: pip install --quiet html5lib cssutils
+
+      # Quick smoke-test: parse both app files with Python so Copilot
+      # can catch HTML/CSS syntax errors before committing
+      - name: Smoke-test HTML/CSS parsing
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          HTMLParser().feed(Path("app/index.html").read_text(encoding="utf-8"))
+          print("app/index.html — OK")
+          # cssutils emits warnings for unknown props; suppress and just parse
+          import logging, cssutils
+          cssutils.log.setLevel(logging.CRITICAL)
+          cssutils.parseFile("app/styles.css")
+          print("app/styles.css  — OK")
+          PY

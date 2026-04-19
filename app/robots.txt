@@ -1,0 +1,17 @@
+User-agent: *
+# Allow all content pages
+Allow: /
+
+# Block form submission endpoints so crawlers don't accidentally trigger them
+Disallow: /search
+Disallow: /contact-submitted
+
+# Block common bot scanning paths
+Disallow: /wp-admin
+Disallow: /wp-login.php
+Disallow: /admin
+Disallow: /login
+Disallow: /.env
+Disallow: /config
+
+Sitemap: https://www.donnasellslv.com/sitemap.xml
