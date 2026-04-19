@@ -250,6 +250,23 @@ h1 {
   transform: translateY(-1px);
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cta-secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.cta-secondary:hover {
+  background: var(--accent);
+  color: #10141e;
+}
+
 /* ─── Main layout ────────────────────────────────────────────────── */
 main {
   max-width: 1024px;
@@ -413,6 +430,76 @@ h2 {
 .listing-cta:hover {
   background: var(--accent);
   color: #10141e;
+}
+
+/* ─── Experience + communities ────────────────────────────────────── */
+.experience-grid,
+.community-grid,
+.testimonial-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.experience-item,
+.community-card,
+.testimonial {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0f1420;
+  padding: 1.1rem 1.2rem;
+}
+
+.experience-item h3,
+.community-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.experience-item p,
+.community-card p,
+.testimonial p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.testimonial {
+  margin: 0;
+}
+
+.testimonial cite {
+  display: block;
+  margin-top: 0.75rem;
+  color: var(--accent);
+  font-style: normal;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ─── FAQ ─────────────────────────────────────────────────────────── */
+.faq-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.faq-list details {
+  background: #0b101b;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+
+.faq-list summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.faq-list p {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 /* ─── About ──────────────────────────────────────────────────────── */
