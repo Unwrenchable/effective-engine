@@ -3,107 +3,275 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
     <title>Donna Sells LV | Luxury Real Estate in Las Vegas</title>
     <meta
       name="description"
-      content="Premier Las Vegas luxury real estate experience with MLS-ready search, concierge service, and social-first brand presence."
+      content="Las Vegas luxury real estate with Donna Sells LV. Browse premier listings in Summerlin, Henderson, and the Las Vegas Strip. Book a private consultation today."
     />
     <meta
       name="keywords"
-      content="Las Vegas luxury real estate, MLS homes, high-end properties, Donna Sells LV"
+      content="Las Vegas luxury real estate, MLS listings, high-end homes, Summerlin, Henderson, real estate agent, Donna Sells LV"
     />
+
+    <!-- Open Graph -->
     <meta property="og:title" content="Donna Sells LV | Luxury Real Estate in Las Vegas" />
     <meta
       property="og:description"
-      content="A premium, conversion-focused luxury real estate experience designed to scale."
+      content="Premier luxury real estate in Las Vegas. Exclusive listings, concierge service, and off-market opportunities."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.donnasellslv.com/app/" />
-    <meta property="og:image" content="https://images.unsplash.com/photo-1560518883-ce09059eeffa" />
+    <meta property="og:url" content="https://www.donnasellslv.com/" />
+    <meta
+      property="og:image"
+      content="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@donnasellslv" />
     <meta name="twitter:title" content="Donna Sells LV | Luxury Real Estate in Las Vegas" />
     <meta
       name="twitter:description"
-      content="High-end real estate marketing experience with MLS-ready architecture."
+      content="Premier luxury real estate in Las Vegas. Exclusive listings, concierge service, and off-market opportunities."
     />
-    <link rel="canonical" href="https://www.donnasellslv.com/app/" />
+    <meta
+      name="twitter:image"
+      content="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80"
+    />
+
+    <!-- Canonical + theme -->
+    <link rel="canonical" href="https://www.donnasellslv.com/" />
+    <meta name="theme-color" content="#090b10" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="./styles.css" />
+
+    <!-- Structured data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "RealEstateAgent",
         "name": "Donna Sells LV",
         "url": "https://www.donnasellslv.com/",
-        "areaServed": "Las Vegas, NV",
+        "areaServed": {
+          "@type": "City",
+          "name": "Las Vegas",
+          "addressRegion": "NV"
+        },
         "sameAs": [
           "https://www.instagram.com/donnasellslv/",
           "https://www.facebook.com/donnasellslv/",
           "https://www.linkedin.com/company/donnasellslv/",
           "https://www.youtube.com/@donnasellslv"
         ],
-        "description": "Luxury real estate advisory and property marketing service in Las Vegas."
+        "description": "Luxury real estate advisory and property marketing in Las Vegas, NV."
       }
     </script>
   </head>
   <body>
-    <header class="site-header">
-      <p class="eyebrow">Luxury Real Estate in Las Vegas</p>
-      <h1>Donna Sells LV</h1>
-      <p class="lead">A modern, high-converting platform for premium listings and elite client service.</p>
-      <a class="cta" href="#contact">Book a Private Consultation</a>
+    <a class="skip-nav" href="#main-content">Skip to main content</a>
+
+    <!-- ─── Navigation ──────────────────────────────────────────── -->
+    <nav class="site-nav" aria-label="Site navigation">
+      <div class="nav-inner">
+        <a class="nav-brand" href="/">Donna Sells LV</a>
+        <button
+          class="nav-burger"
+          aria-controls="nav-menu"
+          aria-expanded="false"
+          aria-label="Open navigation menu"
+          type="button"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <ul class="nav-menu" id="nav-menu" role="list">
+          <li><a href="#search">Search</a></li>
+          <li><a href="#listings">Listings</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a class="nav-cta" href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- ─── Hero ────────────────────────────────────────────────── -->
+    <header class="site-hero">
+      <div class="hero-inner">
+        <p class="eyebrow">Luxury Real Estate · Las Vegas, NV</p>
+        <h1>Donna Sells LV</h1>
+        <p class="lead">
+          Exclusive access to Las Vegas's finest properties — from guard-gated
+          estates to Strip penthouses. Private showings, off-market
+          opportunities, and concierge service at every step.
+        </p>
+        <a class="cta" href="#contact">Book a Private Consultation</a>
+      </div>
     </header>
 
-    <main>
-      <section aria-labelledby="mls-heading" class="card">
-        <h2 id="mls-heading">Integrated MLS Experience (Ready)</h2>
-        <p>
-          This section is structured for direct MLS widget/embed integration so live listings can be dropped in
-          without redesign.
+    <!-- ─── Main content ─────────────────────────────────────────── -->
+    <main id="main-content">
+      <!-- Property Search -->
+      <section aria-labelledby="search-heading" class="card" id="search">
+        <h2 id="search-heading">Find Your Property</h2>
+        <p class="section-intro">
+          Search current MLS listings across Las Vegas and surrounding communities.
         </p>
-        <form class="search-grid" role="search" aria-label="Property search" action="https://www.donnasellslv.com/app/search" method="get">
-          <label>
+        <!-- Update action URL to your IDX/MLS search endpoint before deploying -->
+        <form
+          aria-label="Property search"
+          class="search-grid"
+          action="https://www.donnasellslv.com/search"
+          method="get"
+          role="search"
+        >
+          <label for="location">
             Location
-            <input type="text" name="location" placeholder="Summerlin, Henderson, The Strip" />
+            <input
+              id="location"
+              type="text"
+              name="location"
+              placeholder="Summerlin, Henderson, The Strip"
+              autocomplete="address-level2"
+            />
           </label>
-          <label>
+          <label for="price">
             Price Range
-            <input type="text" name="price" placeholder="$1M - $5M" />
+            <select id="price" name="price">
+              <option value="">Any</option>
+              <option value="1m-2m">$1M – $2M</option>
+              <option value="2m-5m">$2M – $5M</option>
+              <option value="5m-10m">$5M – $10M</option>
+              <option value="10m-plus">$10M+</option>
+            </select>
           </label>
-          <label>
+          <label for="homeType">
             Home Type
-            <select name="homeType">
-              <option>Any</option>
+            <select id="homeType" name="homeType">
+              <option value="">Any</option>
               <option>Single Family</option>
               <option>Penthouse</option>
               <option>Condo</option>
               <option>Estate</option>
             </select>
           </label>
-          <button type="submit">Find Listings</button>
+          <div class="search-action">
+            <button class="btn-search" type="submit">Search Listings</button>
+          </div>
         </form>
       </section>
 
-      <section aria-labelledby="featured-heading" class="card">
+      <!-- Featured Listings -->
+      <section aria-labelledby="featured-heading" class="card" id="listings">
         <h2 id="featured-heading">Featured Luxury Collection</h2>
+        <p class="section-intro">
+          Hand-selected properties representing the pinnacle of Las Vegas living.
+        </p>
         <div class="listing-grid">
           <article>
-            <h3>Modern Desert Estate</h3>
-            <p>4 Bed • 5 Bath • 5,900 sq ft • Red Rock Views</p>
+            <img
+              class="listing-img"
+              src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=75"
+              alt="Modern Desert Estate exterior with mountain views"
+              width="800"
+              height="533"
+              loading="lazy"
+            />
+            <div class="listing-body">
+              <h3>Modern Desert Estate</h3>
+              <p class="listing-price">$3,750,000</p>
+              <p class="listing-meta">4 Bed · 5 Bath · 5,900 sq ft · Red Rock Views</p>
+              <a class="listing-cta" href="#contact">Schedule a Showing</a>
+            </div>
           </article>
           <article>
-            <h3>Skyline Penthouse</h3>
-            <p>3 Bed • 3.5 Bath • 3,400 sq ft • Strip Panorama</p>
+            <img
+              class="listing-img"
+              src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=75"
+              alt="Skyline Penthouse with Las Vegas Strip panorama"
+              width="800"
+              height="533"
+              loading="lazy"
+            />
+            <div class="listing-body">
+              <h3>Skyline Penthouse</h3>
+              <p class="listing-price">$2,495,000</p>
+              <p class="listing-meta">3 Bed · 3.5 Bath · 3,400 sq ft · Strip Panorama</p>
+              <a class="listing-cta" href="#contact">Schedule a Showing</a>
+            </div>
           </article>
           <article>
-            <h3>Private Golf Villa</h3>
-            <p>5 Bed • 6 Bath • 6,800 sq ft • Guard-Gated Community</p>
+            <img
+              class="listing-img"
+              src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=75"
+              alt="Private Golf Villa with pool in guard-gated community"
+              width="800"
+              height="533"
+              loading="lazy"
+            />
+            <div class="listing-body">
+              <h3>Private Golf Villa</h3>
+              <p class="listing-price">$5,200,000</p>
+              <p class="listing-meta">5 Bed · 6 Bath · 6,800 sq ft · Guard-Gated Community</p>
+              <a class="listing-cta" href="#contact">Schedule a Showing</a>
+            </div>
           </article>
         </div>
       </section>
 
-      <section aria-labelledby="social-heading" class="card">
-        <h2 id="social-heading">Social Presence</h2>
-        <p>Build trust and reach high-value buyers with social-first storytelling.</p>
+      <!-- About Donna -->
+      <section aria-labelledby="about-heading" class="card" id="about">
+        <div class="about-grid">
+          <div class="about-text">
+            <p class="eyebrow">About</p>
+            <h2 id="about-heading">Meet Donna</h2>
+            <p>
+              With over 15 years dedicated to Las Vegas luxury real estate,
+              Donna brings unmatched market knowledge, a curated network of
+              high-net-worth buyers, and an unwavering commitment to results.
+            </p>
+            <p>
+              From securing off-market estates in Summerlin to representing
+              buyers acquiring Strip-view penthouses, Donna's client-first
+              approach has built a reputation as the go-to name for Las Vegas
+              luxury transactions.
+            </p>
+          </div>
+          <div class="about-stats">
+            <div class="stat">
+              <strong>$200M+</strong>
+              <span>In closed transactions</span>
+            </div>
+            <div class="stat">
+              <strong>15+</strong>
+              <span>Years in Las Vegas luxury</span>
+            </div>
+            <div class="stat">
+              <strong>Top 1%</strong>
+              <span>Nevada licensed real estate agents</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Social Presence -->
+      <section aria-labelledby="social-heading" class="card" id="social">
+        <h2 id="social-heading">Follow Along</h2>
+        <p class="section-intro">
+          New listings, market updates, and behind-the-scenes Las Vegas luxury
+          real estate — follow on your platform of choice.
+        </p>
         <nav aria-label="Social media links" class="social-links">
           <a href="https://www.instagram.com/donnasellslv/" rel="noopener noreferrer" target="_blank">Instagram</a>
           <a href="https://www.facebook.com/donnasellslv/" rel="noopener noreferrer" target="_blank">Facebook</a>
@@ -112,14 +280,122 @@
         </nav>
       </section>
 
-      <section id="contact" aria-labelledby="contact-heading" class="card">
+      <!-- Contact Form -->
+      <section aria-labelledby="contact-heading" class="card" id="contact">
         <h2 id="contact-heading">Concierge Contact</h2>
-        <p>For private showings, seller strategy, and off-market opportunities.</p>
-        <p>
-          <strong>Direct Contact:</strong>
-          <a href="https://www.donnasellslv.com/contact" rel="noopener noreferrer">Use the official contact portal</a>
+        <p class="section-intro">
+          Private showings, seller strategy, off-market opportunities, and
+          market valuations — reach out and Donna's team will be in touch
+          within one business day.
         </p>
+        <!-- Replace the action URL with your form endpoint (e.g. Formspree, Netlify Forms) before deploying -->
+        <form
+          class="contact-form"
+          method="POST"
+          action="https://formspree.io/f/YOUR_FORM_ID"
+        >
+          <div class="form-row">
+            <label for="contact-name">
+              Full Name
+              <input
+                id="contact-name"
+                type="text"
+                name="name"
+                placeholder="Jane Smith"
+                required
+                autocomplete="name"
+              />
+            </label>
+            <label for="contact-email">
+              Email Address
+              <input
+                id="contact-email"
+                type="email"
+                name="email"
+                placeholder="jane@example.com"
+                required
+                autocomplete="email"
+              />
+            </label>
+          </div>
+          <div class="form-row">
+            <label for="contact-phone">
+              Phone (optional)
+              <input
+                id="contact-phone"
+                type="tel"
+                name="phone"
+                placeholder="+1 (702) 555-0100"
+                autocomplete="tel"
+              />
+            </label>
+            <label for="contact-interest">
+              I'm interested in…
+              <select id="contact-interest" name="interest">
+                <option value="">Select an option</option>
+                <option>Buying a property</option>
+                <option>Selling a property</option>
+                <option>Private showing</option>
+                <option>Off-market opportunities</option>
+                <option>Market valuation</option>
+              </select>
+            </label>
+          </div>
+          <label for="contact-message">
+            Message
+            <textarea
+              id="contact-message"
+              name="message"
+              rows="4"
+              placeholder="Tell me what you're looking for and the best time to connect."
+            ></textarea>
+          </label>
+          <button class="btn-submit" type="submit">Send Message</button>
+        </form>
       </section>
     </main>
+
+    <!-- ─── Footer ──────────────────────────────────────────────── -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-brand">Donna Sells LV</p>
+        <nav aria-label="Footer navigation">
+          <a href="#search">Search</a>
+          <a href="#listings">Listings</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <nav aria-label="Social media footer links" class="footer-social">
+          <a href="https://www.instagram.com/donnasellslv/" rel="noopener noreferrer" target="_blank">Instagram</a>
+          <a href="https://www.facebook.com/donnasellslv/" rel="noopener noreferrer" target="_blank">Facebook</a>
+          <a href="https://www.linkedin.com/company/donnasellslv/" rel="noopener noreferrer" target="_blank">LinkedIn</a>
+          <a href="https://www.youtube.com/@donnasellslv" rel="noopener noreferrer" target="_blank">YouTube</a>
+        </nav>
+        <p class="footer-disclaimer">
+          Licensed Nevada Real Estate Agent. All information is deemed reliable
+          but not guaranteed. Listings and pricing are subject to change without
+          notice. Equal Housing Opportunity.
+        </p>
+        <p class="footer-copy">© <span id="year"></span> Donna Sells LV. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      const burger = document.querySelector('.nav-burger');
+      const menu = document.getElementById('nav-menu');
+      burger.addEventListener('click', function () {
+        const expanded = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', String(!expanded));
+        menu.classList.toggle('is-open');
+      });
+      menu.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          burger.setAttribute('aria-expanded', 'false');
+          menu.classList.remove('is-open');
+        });
+      });
+    </script>
   </body>
 </html>
