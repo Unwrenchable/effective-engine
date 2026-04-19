@@ -694,6 +694,21 @@
               placeholder="Tell me what you're looking for and the best time to connect."
             ></textarea>
           </label>
+          <!-- Honeypot: hidden from real users; bots fill this in and the
+               submission is silently dropped. Do not remove or label visibly. -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="contact-url">Website</label>
+            <input
+              id="contact-url"
+              type="text"
+              name="_gotcha"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+          <!-- Timestamp token: JS sets this at page-load; submissions that
+               arrive in under 3 seconds are bot-speed and are blocked. -->
+          <input type="hidden" name="_loadedAt" id="form-loaded-at" />
           <button class="btn-submit" type="submit">Send Message</button>
         </form>
       </section>
@@ -703,7 +718,8 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <p class="footer-brand">Donna Sells LV</p>
-        <a class="footer-phone" href="tel:+17025550100">(702) 555-0100</a>
+        <!-- Phone rendered by JS to deter automated harvesting -->
+        <span id="biz-phone" class="footer-phone" aria-label="Business phone number"></span>
         <nav aria-label="Footer navigation">
           <a href="#search">Search MLS</a>
           <a href="#listings">Listings</a>
@@ -729,8 +745,10 @@
     </footer>
 
     <script>
+      // ─── Year ──────────────────────────────────────────────────────
       document.getElementById('year').textContent = new Date().getFullYear();
 
+      // ─── Mobile nav ────────────────────────────────────────────────
       const burger = document.querySelector('.nav-burger');
       const menu = document.getElementById('nav-menu');
       burger.addEventListener('click', function () {
@@ -744,6 +762,46 @@
           menu.classList.remove('is-open');
         });
       });
+
+      // ─── Phone obfuscation ─────────────────────────────────────────
+      // The number is split into parts and assembled at runtime so
+      // automated scrapers cannot harvest it from raw HTML source.
+      (function () {
+        var parts = ['(702)', '\u00a0', '555', '-', '0100'];
+        var num   = parts.join('');
+        var raw   = '+17025550100'; // TODO: replace both with real number
+        var el    = document.getElementById('biz-phone');
+        if (!el) return;
+        var a = document.createElement('a');
+        a.href = 'tel:' + raw;
+        a.textContent = num;
+        a.className = 'footer-phone';
+        el.parentNode.replaceChild(a, el);
+      })();
+
+      // ─── Bot protection: load-time stamp ───────────────────────────
+      var loadedAt = Date.now();
+      var loadField = document.getElementById('form-loaded-at');
+      if (loadField) loadField.value = String(loadedAt);
+
+      // ─── Bot protection: form guard ────────────────────────────────
+      var contactForm = document.querySelector('.contact-form');
+      if (contactForm) {
+        contactForm.addEventListener('submit', function (e) {
+          // 1. Honeypot check — real users leave this blank
+          var honey = contactForm.querySelector('input[name="_gotcha"]');
+          if (honey && honey.value !== '') {
+            e.preventDefault();
+            return;
+          }
+          // 2. Time-floor check — block submissions faster than 3 seconds
+          var elapsed = Date.now() - loadedAt;
+          if (elapsed < 3000) {
+            e.preventDefault();
+            return;
+          }
+        });
+      }
     </script>
   </body>
 </html>
