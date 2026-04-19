@@ -790,11 +790,14 @@
 
           const formData = new FormData(propertySearchForm);
           const params = new URLSearchParams();
+          const getField = function (name) {
+            return (formData.get(name) || '').toString().trim();
+          };
 
-          const location = (formData.get('location') || '').toString().trim();
-          const price = (formData.get('price') || '').toString().trim();
-          const beds = (formData.get('beds') || '').toString().trim();
-          const homeType = (formData.get('homeType') || '').toString().trim();
+          const location = getField('location');
+          const price = getField('price');
+          const beds = getField('beds');
+          const homeType = getField('homeType');
 
           if (location) {
             params.set('idx-q-Locations<0>', location);
@@ -814,7 +817,12 @@
             params.set('idx-q-PropertyTypes<0>', homeTypeMap[homeType]);
           }
 
-          const targetUrl = new URL(IDX_SEARCH_ENDPOINT, window.location.origin);
+          let targetUrl;
+          try {
+            targetUrl = new URL(IDX_SEARCH_ENDPOINT);
+          } catch (error) {
+            targetUrl = new URL(IDX_SEARCH_ENDPOINT, window.location.origin);
+          }
           targetUrl.search = params.toString();
           window.location.assign(targetUrl.toString());
         });
