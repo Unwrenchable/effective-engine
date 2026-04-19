@@ -790,15 +790,18 @@
 
           const formData = new FormData(propertySearchForm);
           const params = new URLSearchParams();
-          const getField = (name) => (formData.get(name) || '').toString().trim();
+          const DIGITS_ONLY_REGEX = /^\d+$/;
+          const getFieldValue = (name) => (formData.get(name) || '').toString().trim();
+          const sanitizeLocationInput = (value) =>
+            value.replace(/[^a-zA-Z0-9\s.'&-]/g, '').replace(/\s+/g, ' ').trim();
 
-          const location = getField('location');
-          const price = getField('price');
-          const beds = getField('beds');
-          const homeType = getField('homeType');
+          const location = getFieldValue('location');
+          const price = getFieldValue('price');
+          const beds = getFieldValue('beds');
+          const homeType = getFieldValue('homeType');
 
           if (location) {
-            const sanitizedLocation = location.replace(/[^a-zA-Z0-9\s.'&-]/g, '').replace(/\s+/g, ' ').trim();
+            const sanitizedLocation = sanitizeLocationInput(location);
             if (sanitizedLocation) {
               params.set('idx-q-Locations<0>', sanitizedLocation);
             }
@@ -810,7 +813,7 @@
             if (selectedPrice.max) params.set('idx-q-MaxPrice', String(selectedPrice.max));
           }
 
-          if (/^\d+$/.test(beds)) {
+          if (DIGITS_ONLY_REGEX.test(beds)) {
             params.set('idx-q-BedsMin', beds);
           }
 
