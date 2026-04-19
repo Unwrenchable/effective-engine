@@ -1,2 +1,7 @@
 # effective-engine
-Read estate app/site
+
+Luxury real estate landing app prototype.
+
+## App
+
+Open `/app/index.html` to view the upgraded, SEO-focused high-end real estate experience.
