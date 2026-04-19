@@ -1,0 +1,26 @@
+{
+  "name": "effective-engine-server",
+  "version": "1.0.0",
+  "description": "Proprietary MLS / IDX platform server for DonnaSellsLV",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "migrate": "node db/migrate.js",
+    "sync:now": "node server/sync/ingest.js --once"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "@fastify/jwt": "^9.1.0",
+    "@fastify/rate-limit": "^10.2.1",
+    "bcryptjs": "^3.0.2",
+    "fastify": "^5.9.0",
+    "openai": "^4.96.0",
+    "pg": "^8.13.3",
+    "pg-boss": "^10.1.5"
+  }
+}

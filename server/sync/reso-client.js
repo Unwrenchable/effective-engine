@@ -1,0 +1,385 @@
+'use strict';
+
+/**
+ * RESO Web API (OData 4.0) client.
+ *
+ * This replaces the Spark-specific `api/idx/_lib/client.js` proxy
+ * with a standards-based RESO Web API client suitable for a direct
+ * GLVAR MLS data feed under a Vendor/Franchisor or RESO Certification license.
+ *
+ * Standard RESO Web API endpoint patterns:
+ *   GET /Property               — listings (equivalent to Spark /v1/listings)
+ *   GET /Member                 — agents
+ *   GET /Office                 — offices
+ *   GET /Media                  — listing photos/media
+ *   GET /OpenHouse              — open house events
+ *
+ * Authentication: OAuth2 Client Credentials (same as Spark), or static API key.
+ *
+ * GLVAR production RESO endpoint (once licensed):
+ *   https://replication.sparkapi.com/Reso/OData
+ *
+ * Reference: https://www.reso.org/reso-web-api/
+ */
+
+'use strict';
+
+const config = require('../config');
+
+// In-process OAuth2 token cache
+let _tokenCache = null; // { access_token, expires_at }
+
+// ─── Authentication ───────────────────────────────────────────────────────────
+
+/**
+ * Obtain a valid Bearer token for the RESO feed.
+ * Uses RESO_API_KEY when set; otherwise performs OAuth2 Client Credentials.
+ * @returns {Promise<string>}
+ */
+async function getBearerToken() {
+  const { apiKey, clientId, clientSecret, baseUrl } = config.reso;
+
+  if (apiKey) return apiKey;
+
+  if (!clientId || !clientSecret) {
+    throw new ResoConfigError(
+      'RESO credentials not configured. Set RESO_CLIENT_ID and RESO_CLIENT_SECRET ' +
+      '(or RESO_API_KEY) as environment variables.'
+    );
+  }
+
+  const now       = Date.now();
+  const bufferMs  = 60_000;
+  if (_tokenCache && _tokenCache.expires_at > now + bufferMs) {
+    return _tokenCache.access_token;
+  }
+
+  // RESO OAuth2 token endpoint (same as Spark)
+  const tokenUrl = `${baseUrl.replace('/Reso/OData', '')}/oauth2/grant`;
+  const body     = new URLSearchParams({
+    grant_type:    'client_credentials',
+    client_id:     clientId,
+    client_secret: clientSecret,
+  });
+
+  const res = await fetchWithTimeout(tokenUrl, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body:    body.toString(),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new ResoAuthError(`RESO token request failed (${res.status}): ${text.slice(0, 200)}`);
+  }
+
+  const data = await res.json();
+  if (!data.access_token) {
+    throw new ResoAuthError('RESO token response missing access_token field.');
+  }
+
+  _tokenCache = {
+    access_token: data.access_token,
+    expires_at:   now + (data.expires_in || 3600) * 1000,
+  };
+
+  return _tokenCache.access_token;
+}
+
+// ─── Core OData request ───────────────────────────────────────────────────────
+
+/**
+ * Make an authenticated OData GET request to the RESO Web API.
+ *
+ * @param {string} resource  RESO resource name, e.g. 'Property', 'Member', 'Media'
+ * @param {object} [odata]   OData query options
+ * @param {string}   [odata.$filter]
+ * @param {string}   [odata.$select]
+ * @param {string}   [odata.$orderby]
+ * @param {number}   [odata.$top]
+ * @param {number}   [odata.$skip]
+ * @param {string}   [odata.$expand]
+ * @param {boolean}  [odata.$count]
+ * @returns {Promise<{value: object[], '@odata.count'?: number, '@odata.nextLink'?: string}>}
+ */
+async function resoGet(resource, odata = {}) {
+  const token = await getBearerToken();
+
+  const params = new URLSearchParams();
+  if (odata.$filter)  params.set('$filter',  odata.$filter);
+  if (odata.$select)  params.set('$select',  odata.$select);
+  if (odata.$orderby) params.set('$orderby', odata.$orderby);
+  if (odata.$top      != null) params.set('$top',    String(odata.$top));
+  if (odata.$skip     != null) params.set('$skip',   String(odata.$skip));
+  if (odata.$expand)  params.set('$expand',  odata.$expand);
+  if (odata.$count)   params.set('$count',   'true');
+
+  const qs  = params.toString();
+  const url = `${config.reso.baseUrl}/${resource}${qs ? '?' + qs : ''}`;
+
+  const res = await fetchWithTimeout(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept:        'application/json',
+      'User-Agent':  'DonnaSellsLV-Platform/2.0',
+    },
+  }, 30_000);
+
+  if (res.status === 401) {
+    _tokenCache = null;
+    throw new ResoAuthError(`RESO API returned 401 Unauthorized for ${resource}`);
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new ResoApiError(
+      `RESO API error ${res.status} for ${resource}: ${text.slice(0, 300)}`,
+      res.status
+    );
+  }
+
+  const json = await res.json();
+
+  // OData responses wrap results in a 'value' array
+  if (json && typeof json === 'object' && Array.isArray(json.value)) {
+    return json;
+  }
+
+  // Spark RESO compatibility: sometimes returns D.Results
+  if (json?.D?.Results) {
+    return {
+      value: json.D.Results,
+      '@odata.count': json.D.TotalCount,
+    };
+  }
+
+  return { value: Array.isArray(json) ? json : [json] };
+}
+
+// ─── High-level helpers ───────────────────────────────────────────────────────
+
+/**
+ * Fetch a page of Property (listing) records.
+ *
+ * @param {object} opts
+ * @param {string} [opts.filter]          OData $filter expression
+ * @param {string} [opts.modifiedSince]   ISO 8601 timestamp for incremental sync
+ * @param {number} [opts.top]             page size (default: config.sync.batchSize)
+ * @param {number} [opts.skip]            offset
+ * @param {string} [opts.select]          comma-separated field list
+ * @returns {Promise<{listings: object[], count: number|null, nextLink: string|null}>}
+ */
+async function fetchListings({ filter, modifiedSince, top, skip = 0, select } = {}) {
+  const filters = [];
+
+  if (filter)       filters.push(filter);
+  if (modifiedSince) {
+    filters.push(`ModificationTimestamp gt ${modifiedSince}`);
+  }
+
+  const $filter = filters.join(' and ') || undefined;
+
+  const result = await resoGet('Property', {
+    $filter,
+    $select: select || LISTING_SELECT,
+    $orderby: 'ModificationTimestamp asc',
+    $top:  top ?? config.sync.batchSize,
+    $skip: skip,
+    $count: true,
+    $expand: 'Media',
+  });
+
+  return {
+    listings: result.value || [],
+    count:    result['@odata.count'] ?? null,
+    nextLink: result['@odata.nextLink'] ?? null,
+  };
+}
+
+/**
+ * Fetch all listings modified since a given timestamp by iterating pages.
+ *
+ * @param {string|null} modifiedSince  ISO 8601, or null for full sync
+ * @param {function}    onBatch        async (listings: object[]) => void
+ * @returns {Promise<{total: number, pages: number}>}
+ */
+async function fetchAllListings(modifiedSince, onBatch) {
+  const batchSize = config.sync.batchSize;
+  let   skip      = 0;
+  let   total     = 0;
+  let   pages     = 0;
+
+  while (true) {
+    const { listings, count, nextLink } = await fetchListings({
+      modifiedSince: modifiedSince || undefined,
+      top:  batchSize,
+      skip,
+    });
+
+    if (!listings.length) break;
+
+    await onBatch(listings);
+    total += listings.length;
+    pages++;
+    skip  += batchSize;
+
+    // Stop when we've consumed all records (count known) or no nextLink
+    if (count !== null && skip >= count) break;
+    if (!nextLink && listings.length < batchSize) break;
+  }
+
+  return { total, pages };
+}
+
+/**
+ * Verify the RESO connection and return account info.
+ * @returns {Promise<{connected:boolean, account:string}>}
+ */
+async function verifyConnection() {
+  const result = await resoGet('$metadata', {});
+  return { connected: true, endpoint: config.reso.baseUrl };
+}
+
+// ─── RESO Standard field selection ───────────────────────────────────────────
+
+const LISTING_SELECT = [
+  'ListingId', 'ListingKey', 'MlsStatus',
+  'ListPrice', 'OriginalListPrice',
+  'StreetNumber', 'StreetName', 'UnitNumber',
+  'City', 'StateOrProvince', 'PostalCode', 'CountyOrParish',
+  'Latitude', 'Longitude',
+  'BedroomsTotal', 'BathroomsTotalInteger', 'BathroomsFull', 'BathroomsHalf',
+  'LivingArea', 'LotSizeSquareFeet', 'LotSizeAcres',
+  'PropertyType', 'PropertySubType', 'YearBuilt', 'GarageSpaces',
+  'PoolPrivateYN', 'SpaYN', 'View', 'ViewYN',
+  'AssociationFee', 'AssociationFeeFrequency',
+  'ListOfficeName', 'ListOfficeKey', 'ListOfficeMlsId',
+  'ListAgentFullName', 'ListAgentKey', 'ListAgentMlsId',
+  'ListingContractDate', 'OnMarketDate', 'ModificationTimestamp',
+  'PublicRemarks',
+  'CommunityFeatures', 'InteriorFeatures', 'ExteriorFeatures',
+  'Heating', 'Cooling', 'FireplaceYN', 'FireplacesTotal',
+  'LaundryFeatures', 'ParkingFeatures', 'Roof', 'FoundationDetails',
+  'IDXDisplayAllowed',
+].join(',');
+
+// ─── RESO → normalised DB field mapping ──────────────────────────────────────
+
+/**
+ * Map a raw RESO Property record to the DB schema used by upsertListing().
+ * @param {object} r  raw RESO record
+ * @param {string} courtesyOf
+ * @param {string} disclaimer
+ * @returns {object}
+ */
+function mapResoToDb(r, courtesyOf, disclaimer) {
+  return {
+    listing_id:            r.ListingId,
+    mls_status:            r.MlsStatus,
+    list_price:            r.ListPrice,
+    original_list_price:   r.OriginalListPrice,
+    street_number:         r.StreetNumber,
+    street_name:           r.StreetName,
+    unit_number:           r.UnitNumber,
+    city:                  r.City,
+    state_or_province:     r.StateOrProvince,
+    postal_code:           r.PostalCode,
+    county:                r.CountyOrParish,
+    latitude:              r.Latitude,
+    longitude:             r.Longitude,
+    bedrooms_total:        r.BedroomsTotal,
+    bathrooms_total:       r.BathroomsTotalInteger,
+    bathrooms_full:        r.BathroomsFull,
+    bathrooms_half:        r.BathroomsHalf,
+    living_area:           r.LivingArea,
+    lot_size_sqft:         r.LotSizeSquareFeet,
+    lot_size_acres:        r.LotSizeAcres,
+    property_type:         r.PropertyType,
+    property_sub_type:     r.PropertySubType,
+    year_built:            r.YearBuilt,
+    garage_spaces:         r.GarageSpaces,
+    pool_yn:               r.PoolPrivateYN ?? false,
+    spa_yn:                r.SpaYN ?? false,
+    view_yn:               r.ViewYN ?? false,
+    view_description:      Array.isArray(r.View) ? r.View.join(', ') : r.View || null,
+    hoa_fee:               r.AssociationFee,
+    hoa_fee_frequency:     r.AssociationFeeFrequency,
+    list_office_name:      r.ListOfficeName,
+    list_agent_full_name:  r.ListAgentFullName,
+    list_agent_mls_id:     r.ListAgentMlsId,
+    listing_contract_date: r.ListingContractDate,
+    on_market_date:        r.OnMarketDate,
+    modification_timestamp: r.ModificationTimestamp,
+    public_remarks:        r.PublicRemarks,
+    community_features:    Array.isArray(r.CommunityFeatures) ? r.CommunityFeatures.join(', ') : r.CommunityFeatures || null,
+    interior_features:     Array.isArray(r.InteriorFeatures)  ? r.InteriorFeatures.join(', ')  : r.InteriorFeatures  || null,
+    exterior_features:     Array.isArray(r.ExteriorFeatures)  ? r.ExteriorFeatures.join(', ')  : r.ExteriorFeatures  || null,
+    heating:               Array.isArray(r.Heating)           ? r.Heating.join(', ')           : r.Heating           || null,
+    cooling:               Array.isArray(r.Cooling)           ? r.Cooling.join(', ')           : r.Cooling           || null,
+    fireplace_yn:          r.FireplaceYN ?? false,
+    fireplaces_total:      r.FireplacesTotal,
+    laundry_features:      Array.isArray(r.LaundryFeatures)   ? r.LaundryFeatures.join(', ')   : r.LaundryFeatures   || null,
+    parking_features:      Array.isArray(r.ParkingFeatures)   ? r.ParkingFeatures.join(', ')   : r.ParkingFeatures   || null,
+    roof:                  Array.isArray(r.Roof)               ? r.Roof.join(', ')               : r.Roof               || null,
+    foundation_details:    Array.isArray(r.FoundationDetails) ? r.FoundationDetails.join(', ') : r.FoundationDetails || null,
+    idx_display_allowed:   r.IDXDisplayAllowed !== false,
+    attribution_courtesy_of:  courtesyOf,
+    attribution_disclaimer:   disclaimer,
+  };
+}
+
+/**
+ * Extract media items from a RESO Property record.
+ * RESO Media is returned as an expanded collection on the Property record.
+ *
+ * @param {object} r  raw RESO record
+ * @returns {Array<{url:string, mediaType:string, order:number, caption:string|null}>}
+ */
+function extractMedia(r) {
+  const mediaList = r.Media || r.Photos || [];
+  return Array.isArray(mediaList)
+    ? mediaList.map((m, i) => ({
+        url:       m.MediaURL || m.Uri || m.uri || '',
+        mediaType: (m.MediaCategory || 'Photo').toLowerCase() === 'photo' ? 'photo' : 'video',
+        order:     m.Order ?? m.MediaOrder ?? i,
+        caption:   m.ShortDescription || m.MediaCaption || null,
+      })).filter((m) => m.url)
+    : [];
+}
+
+// ─── Fetch helpers ────────────────────────────────────────────────────────────
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30_000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─── Error classes ────────────────────────────────────────────────────────────
+
+class ResoConfigError extends Error {
+  constructor(msg) { super(msg); this.name = 'ResoConfigError'; }
+}
+class ResoAuthError extends Error {
+  constructor(msg) { super(msg); this.name = 'ResoAuthError'; }
+}
+class ResoApiError extends Error {
+  constructor(msg, status) { super(msg); this.name = 'ResoApiError'; this.status = status; }
+}
+
+module.exports = {
+  getBearerToken,
+  resoGet,
+  fetchListings,
+  fetchAllListings,
+  verifyConnection,
+  mapResoToDb,
+  extractMedia,
+  ResoConfigError,
+  ResoAuthError,
+  ResoApiError,
+};

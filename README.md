@@ -1,90 +1,177 @@
 # effective-engine
 
-Production-ready luxury real estate landing site for [Donna Sells LV](https://www.donnasellslv.com/).
+Production-ready luxury real estate platform for [Donna Sells LV](https://www.donnasellslv.com/) — and the foundation for a **proprietary MLS / IDX provider** ecosystem.
 
-## App
+## Architecture
 
-Open `app/index.html` in any browser, or serve the `app/` folder as the web root.
+```
+effective-engine/
+│
+├── app/                   Static frontend (HTML/CSS) — Vercel CDN
+│
+├── api/idx/               Vercel Serverless — IDX proxy (existing, kept for compatibility)
+│   ├── _lib/client.js     Spark API + RESO Web API client
+│   ├── _lib/compliance.js IDX display-rule enforcement
+│   ├── search.js          GET /api/idx/search
+│   ├── verify.js          GET /api/idx/verify
+│   └── listing/[id].js    GET /api/idx/listing/:id
+│
+├── server/                Platform API server (Fastify — deploy to Railway/Render/VPS)
+│   ├── index.js           Server entry point
+│   ├── config.js          Centralised ENV variable loading
+│   ├── routes/            API route handlers
+│   │   ├── listings.js    GET/POST /v2/listings
+│   │   ├── market.js      GET /v2/market/stats
+│   │   ├── neighborhoods.js  GET /v2/neighborhoods/:slug
+│   │   ├── alerts.js      CRUD /v2/alerts
+│   │   ├── agents.js      GET /v2/agents/:mlsId
+│   │   ├── inquiries.js   POST /v2/inquiries
+│   │   ├── auth.js        POST /v2/auth/*
+│   │   └── admin/sync.js  Admin sync control
+│   ├── models/            Database access layer (PostgreSQL)
+│   ├── services/          Business logic
+│   │   ├── search.js      Structured + semantic (vector) search
+│   │   ├── ai.js          OpenAI: embeddings, descriptions, photo tags, chatbot
+│   │   ├── market.js      Market stats + AI narratives
+│   │   ├── avm.js         Automated Valuation Model
+│   │   └── compliance.js  IDX display rules
+│   └── sync/              MLS data pipeline
+│       ├── reso-client.js RESO Web API (OData) client — direct MLS feed
+│       ├── ingest.js      Full + delta sync jobs
+│       ├── media.js       Photo CDN pipeline (R2/S3)
+│       └── scheduler.js   pg-boss cron scheduler
+│
+└── db/
+    ├── migrations/        PostgreSQL schema (PostGIS + pgvector)
+    └── migrate.js         Migration runner
+```
 
-### What's included
+## What's included
 
-- **Sticky nav** with mobile hamburger menu and skip-navigation link
-- **Hero** with full-width background image and overlay
-- **Property search** form wired to the on-site IDX gateway (`/api/idx/search`)
-- **IDX gateway** — Vercel serverless functions that securely proxy MLS data
-- **Featured listings** with photos, prices, and showing CTAs
-- **About section** with credential stats
-- **Social links** for Instagram, Facebook, LinkedIn, and YouTube
-- **Contact form** — replace `YOUR_FORM_ID` in the `action` attribute with your [Formspree](https://formspree.io/) (or equivalent) endpoint
-- **Footer** with legal disclaimer and dynamic copyright year
-- SEO: canonical URL, Open Graph, Twitter Card, schema.org `RealEstateAgent` JSON-LD
-- Accessibility: ARIA labels, `focus-visible` styles, semantic HTML
-- Print stylesheet
+### Existing (Vercel serverless — always on)
+- **Property search** wired to `/api/idx/search`
+- **IDX gateway** — securely proxies Spark API or RESO direct feed
+- **GLVAR compliance** — opt-out filtering, field redaction, photo caps, attribution
+- **Listing detail** — full MLS record at `/api/idx/listing/:id`
 
-### Go live checklist
+### New platform server (`server/`)
+- **RESO Web API client** — direct MLS feed replacing Spark once vendor-licensed
+- **Local listing database** — PostgreSQL + PostGIS (geo) + pgvector (AI search)
+- **Semantic search** — natural language via OpenAI embeddings + pgvector
+- **AI description generation** — GPT-4 fills weak/missing listing remarks
+- **AI market narratives** — per-neighbourhood stats summary (Summerlin, Henderson, etc.)
+- **AI photo tagging** — GPT-4 vision extracts feature tags from photos
+- **AVM (automated valuation)** — comparable-sales estimate for any listing
+- **Listing chatbot** — conversational assistant on listing pages
+- **Buyer alerts** — saved searches with email notifications on new matches
+- **JWT auth** — consumer/agent/broker/admin roles
+- **API key issuance** — sub-license IDX display to other agents (you become the provider)
+- **Agent portal API** — agent listings, lead inbox endpoints
+- **Admin sync API** — trigger manual full/delta MLS sync
+- **Off-market listings table** — pocket listings compliant with NAR Clear Cooperation Policy
+- **Compliance audit log** — automated per-session IDX display records for MLS reporting
 
-1. Configure the IDX gateway environment variables in Vercel (see below).
-2. Update the contact form `action` URL with your form-handling endpoint.
-3. Update canonical URL and Open Graph `og:url` to your production domain.
-4. Replace the Twitter `@donnasellslv` handle if needed.
-5. Replace placeholder phone values in JSON-LD and footer phone obfuscation script.
-6. Deploy the `app/` folder and `api/` functions to Vercel.
-
-## IDX Gateway
-
-The site includes a custom IDX gateway built as Vercel Serverless Functions.
-All MLS data flows through these server-side routes — credentials never
-reach the browser.
-
-### API endpoints
+## API endpoints (platform server `/v2/`)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/idx/verify` | Test MLS connection; returns permissions |
-| `GET` | `/api/idx/search` | Search active listings (see params below) |
-| `GET` | `/api/idx/listing/:id` | Fetch full listing detail by MLS# |
+| `GET` | `/v2/listings` | Search listings (structured + natural language) |
+| `GET` | `/v2/listings/:id` | Full listing detail |
+| `GET` | `/v2/listings/:id/similar` | AI-powered similar listings |
+| `GET` | `/v2/listings/:id/avm` | Automated valuation estimate |
+| `POST` | `/v2/listings/:id/chat` | Conversational listing assistant |
+| `GET` | `/v2/market/stats` | Market stats (price, DOM, inventory) |
+| `GET` | `/v2/neighborhoods` | List all tracked neighborhoods |
+| `GET` | `/v2/neighborhoods/:slug` | Neighborhood profile + AI narrative |
+| `POST` | `/v2/auth/register` | Create consumer account |
+| `POST` | `/v2/auth/login` | Obtain JWT |
+| `GET` | `/v2/auth/me` | Current user info |
+| `POST` | `/v2/auth/api-keys` | Issue IDX API key (broker/admin) |
+| `POST` | `/v2/alerts` | Create saved search alert |
+| `GET` | `/v2/alerts` | List user's alerts |
+| `DELETE` | `/v2/alerts/:id` | Remove alert |
+| `GET` | `/v2/agents/:mlsId` | Agent profile |
+| `GET` | `/v2/agents/:mlsId/listings` | Agent's active listings |
+| `POST` | `/v2/inquiries` | Capture buyer/seller lead |
+| `POST` | `/v2/admin/sync` | Trigger manual MLS sync (admin) |
+| `GET` | `/v2/admin/sync/status` | Sync status + listing counts (admin) |
+| `GET` | `/v2/admin/reso/verify` | Test RESO connection (admin) |
 
-#### `/api/idx/search` query parameters
+### `GET /v2/listings` query parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `location` | string | Community or city (e.g. `Summerlin`) |
-| `minPrice` | integer | Minimum list price in USD |
-| `maxPrice` | integer | Maximum list price in USD |
-| `beds` | integer | Minimum bedroom count |
-| `homeType` | string | `single-family` · `penthouse` · `condo` · `estate` · `new-construction` · `guard-gated` |
-| `page` | integer | 1-based page number (default 1) |
-| `pageSize` | integer | Results per page, 1–50 (default 12) |
-| `sort` | string | `price-asc` · `price-desc` · `newest` (default) |
+| `q` | string | Natural language query — triggers semantic search |
+| `location` | string | City, community, or zip code |
+| `minPrice` | integer | Minimum list price |
+| `maxPrice` | integer | Maximum list price |
+| `minBeds` | integer | Minimum bedrooms |
+| `minBaths` | integer | Minimum bathrooms |
+| `propertyType` | string | e.g. `Residential` |
+| `propertySubType` | string | e.g. `Condominium` |
+| `lat` / `lng` | number | Geo centre for radius search |
+| `radiusMiles` | number | Radius in miles (default 10) |
+| `sort` | string | `price-asc` · `price-desc` · `newest` · `relevant` |
+| `page` | integer | 1-based page (default 1) |
+| `pageSize` | integer | Results per page, max 50 (default 12) |
 
-### Environment variables
+## IDX Gateway (existing Vercel functions)
 
-Set these in your Vercel project → Settings → Environment Variables.
-**Never commit credentials to source control.**
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/idx/verify` | Test MLS connection |
+| `GET` | `/api/idx/search` | Search active listings |
+| `GET` | `/api/idx/listing/:id` | Listing detail by MLS# |
+
+## Environment variables
+
+### Vercel (existing IDX proxy)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `IDX_BASE_URL` | Yes | IDX API base URL (e.g. `https://api.sparkapi.com`) |
-| `IDX_CLIENT_ID` | OAuth2 | OAuth2 client ID from your IDX provider |
-| `IDX_CLIENT_SECRET` | OAuth2 | OAuth2 client secret |
-| `IDX_API_KEY` | API key | Direct bearer token (takes precedence over OAuth2) |
-| `SITE_ORIGIN` | Yes | Production origin for CORS (e.g. `https://www.donnasellslv.com`) |
+| `IDX_BASE_URL` | Yes | Spark API base URL |
+| `IDX_CLIENT_ID` | OAuth2 | Spark OAuth2 client ID |
+| `IDX_CLIENT_SECRET` | OAuth2 | Spark OAuth2 client secret |
+| `IDX_API_KEY` | API key | Static bearer token alternative |
+| `SITE_ORIGIN` | Yes | Production CORS origin |
 
-> **Tip:** The gateway supports both OAuth2 Client Credentials (Spark API default)
-> and static API keys. Set `IDX_API_KEY` alone if your provider issues a permanent
-> token; otherwise set `IDX_CLIENT_ID` + `IDX_CLIENT_SECRET`.
+### New RESO direct feed (when vendor license obtained)
 
-### Compliance
+| Variable | Description |
+|----------|-------------|
+| `RESO_BASE_URL` | RESO OData endpoint (activates direct feed mode) |
+| `RESO_CLIENT_ID` | RESO OAuth2 client ID |
+| `RESO_CLIENT_SECRET` | RESO OAuth2 client secret |
+| `RESO_API_KEY` | Static token alternative |
 
-Every response from `/api/idx/search` and `/api/idx/listing/:id` automatically:
-- Strips listings that have opted out of IDX display
-- Removes seller-identifying and private fields (GLVAR policy)
-- Caps photos at the MLS-permitted maximum (25)
-- Attaches the required "Courtesy of …" attribution line
-- Includes the GLVAR IDX disclaimer text
+### Platform server (full list in `.env.example`)
+
+Set `DATABASE_URL`, `OPENAI_API_KEY`, `JWT_SECRET`, CDN settings, etc. See `.env.example`.
+
+## Quick start (platform server)
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Set up environment
+cp .env.example .env
+# Edit .env with your DATABASE_URL, OPENAI_API_KEY, etc.
+
+# 3. Run database migrations
+npm run migrate
+
+# 4. Run initial MLS sync (requires RESO_BASE_URL or IDX_* credentials)
+npm run sync:now
+
+# 5. Start the server
+npm run dev        # development (auto-restart)
+npm start          # production
+```
+
+The server will listen on port 3001 by default and start the sync scheduler automatically.
 
 ## Deployment
 
-For full production deployment steps, validation, host-specific setup, and rollback:
+See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for full production deployment steps for both Vercel (frontend + IDX proxy) and Railway/Render (platform server).
 
-- See [`DEPLOYMENT.md`](./DEPLOYMENT.md)
