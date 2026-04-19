@@ -798,7 +798,10 @@
           const homeType = getField('homeType');
 
           if (location) {
-            params.set('idx-q-Locations<0>', location);
+            const sanitizedLocation = location.replace(/[^a-zA-Z0-9\s.'&-]/g, '').replace(/\s+/g, ' ').trim();
+            if (sanitizedLocation) {
+              params.set('idx-q-Locations<0>', sanitizedLocation);
+            }
           }
 
           if (price && priceMap[price]) {
@@ -807,7 +810,7 @@
             if (selectedPrice.max) params.set('idx-q-MaxPrice', String(selectedPrice.max));
           }
 
-          if (beds) {
+          if (/^\d+$/.test(beds)) {
             params.set('idx-q-BedsMin', beds);
           }
 
@@ -819,7 +822,12 @@
           try {
             targetUrl = new URL(idxSearchEndpoint);
           } catch (error) {
-            targetUrl = new URL(idxSearchEndpoint, window.location.origin);
+            try {
+              targetUrl = new URL(idxSearchEndpoint, window.location.origin);
+            } catch (innerError) {
+              console.error('Invalid IDX search endpoint configuration.', innerError);
+              return;
+            }
           }
           targetUrl.search = params.toString();
           window.location.assign(targetUrl.toString());
