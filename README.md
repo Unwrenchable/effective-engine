@@ -2,12 +2,45 @@
 
 Production-ready luxury real estate platform for [Donna Sells LV](https://www.donnasellslv.com/) — and the foundation for a **proprietary MLS / IDX provider** ecosystem.
 
+## Sites
+
+This repository powers **two distinct frontends** under the same Vercel deployment:
+
+| URL | File | Audience |
+|-----|------|----------|
+| `donnasellslv.com/` | `app/index.html` | Luxury real estate buyers/sellers across the Las Vegas Valley |
+| `donnasellslv.com/horses/` | `app/horses/index.html` | Henderson equestrian community — horse property buyers and sellers |
+
+### Site 1: Donna Sells LV (Luxury Real Estate)
+
+Dark midnight-blue / saddle-gold luxury aesthetic. Serves high-net-worth buyers and sellers across Summerlin, Henderson, Southern Highlands, Strip penthouses, and all Las Vegas Valley guard-gated communities.
+
+### Site 2: Nevada Horse Properties
+
+`app/horses/` — earthy desert tones (dark earth, warm parchment, Nevada sage green, saddle gold). Built specifically for the Henderson equestrian community.
+
+**Why it exists:** Donna and Jeremy are active members of the Henderson horse community — they own horses and know this world firsthand. Horse properties have unique requirements (A-1/A-2 zoning, water rights, barn quality, arena footing, trail access, HOA restrictions on livestock) that a generic luxury site doesn't address. This frontend speaks directly to that audience with dedicated content:
+- Horse property MLS search with equestrian filters (acreage, barn, arena, round pen, pasture)
+- Featured equestrian property cards with feature tags (stall count, arena, acreage)
+- *What Makes a Great Horse Property* — 9-point evaluation guide
+- *Henderson Equestrian Community* — Cornerstone Park equestrian area, River Mountains Loop Trail, Lake Mead/BLM open space, East Henderson horse corridor, Boulder City ranchettes, North LV A-1 zones
+- *Nevada Zoning & Law Essentials* — A-1/A-2/R-E zoning, NRS 40.140 Right to Farm Act, water rights, HOA alert, commercial operation permits
+- Clark County horse property market snapshot
+- Contact form with horse-specific fields (horse count, facility needs)
+
+---
+
 ## Architecture
 
 ```
 effective-engine/
 │
 ├── app/                   Static frontend (HTML/CSS) — Vercel CDN
+│   ├── index.html         Site 1: Donna Sells LV (luxury real estate)
+│   ├── styles.css         Site 1 styles
+│   ├── horses/
+│   │   ├── index.html     Site 2: Nevada Horse Properties
+│   │   └── styles.css     Site 2 styles (earthy equestrian design system)
 │
 ├── api/idx/               Vercel Serverless — IDX proxy (existing, kept for compatibility)
 │   ├── _lib/client.js     Spark API + RESO Web API client

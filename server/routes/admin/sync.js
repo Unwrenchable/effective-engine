@@ -24,6 +24,13 @@ module.exports = async function adminRoutes(fastify) {
 
   // ── Manual sync trigger ───────────────────────────────────────────────────
   fastify.post('/sync', {
+    config: {
+      rateLimit: {
+        max:        5,
+        timeWindow: '1 minute',
+        errorResponseBuilder: () => ({ error: 'Sync trigger rate limit exceeded.' }),
+      },
+    },
     schema: {
       body: {
         type: 'object',

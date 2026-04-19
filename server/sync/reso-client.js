@@ -22,8 +22,6 @@
  * Reference: https://www.reso.org/reso-web-api/
  */
 
-'use strict';
-
 const config = require('../config');
 
 // In-process OAuth2 token cache

@@ -44,6 +44,13 @@ module.exports = async function authRoutes(fastify) {
 
   // ── Login ──────────────────────────────────────────────────────────────────
   fastify.post('/login', {
+    config: {
+      rateLimit: {
+        max:        10,
+        timeWindow: '1 minute',
+        errorResponseBuilder: () => ({ error: 'Too many login attempts. Please wait a minute.' }),
+      },
+    },
     schema: {
       body: {
         type: 'object',

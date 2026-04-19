@@ -12,8 +12,6 @@
  * Set CDN_PROVIDER=r2 (default) or CDN_PROVIDER=s3 in environment.
  */
 
-'use strict';
-
 const { createHash }  = require('crypto');
 const config          = require('../config');
 

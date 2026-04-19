@@ -19,8 +19,6 @@
  *   imported by scheduler.js for scheduled runs
  */
 
-'use strict';
-
 const {
   fetchAllListings, mapResoToDb, extractMedia,
   ResoConfigError, ResoAuthError,
@@ -90,7 +88,7 @@ async function processBatch(rawListings, stats) {
       } else {
         // Detect price/status change by comparing with what we had
         // (For simplicity, we record if a price_history entry doesn't exist yet)
-        await maybRecordChanges(internalId, raw, stats);
+        await maybeRecordChanges(internalId, raw, stats);
       }
 
       // Media
@@ -110,7 +108,7 @@ async function processBatch(rawListings, stats) {
   }
 }
 
-async function maybRecordChanges(internalId, raw, stats) {
+async function maybeRecordChanges(internalId, raw, stats) {
   // Check existing price history for this listing
   const last = await query(
     `SELECT price, event_type FROM price_history WHERE listing_id = $1

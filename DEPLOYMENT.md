@@ -140,7 +140,62 @@ Redeploy Vercel after updating `vercel.json`.
 
 ---
 
-## Post-deployment checklist
+## Part 3: Nevada Horse Properties site (`app/horses/`)
+
+The horse property site is a static subdirectory of `app/` and deploys automatically with Vercel alongside the main site — **no extra deployment steps needed**.
+
+### Pre-deployment checklist
+
+1. Update the horse site contact form `action` attribute in `app/horses/index.html`:
+   - Replace `https://formspree.io/f/YOUR_HORSE_FORM_ID` with a separate Formspree (or equivalent) form endpoint. Using a dedicated form ID lets you route horse property inquiries differently from general luxury inquiries.
+2. Confirm social profile URLs in `app/horses/index.html` match current handles.
+3. Confirm canonical URL: `<link rel="canonical" href="https://www.donnasellslv.com/horses/" />`
+4. Replace placeholder phone parts in the JS obfuscation block near the bottom of `app/horses/index.html` with the real number.
+
+### URL structure
+
+| URL | File |
+|-----|------|
+| `https://www.donnasellslv.com/` | `app/index.html` |
+| `https://www.donnasellslv.com/horses/` | `app/horses/index.html` |
+| `https://www.donnasellslv.com/horses/styles.css` | `app/horses/styles.css` |
+
+Vercel's `cleanUrls: true` setting in `vercel.json` serves `app/horses/index.html` at `/horses/` without the `.html` extension.
+
+### IDX search on the horse site
+
+The horse property search form posts to the same `/api/idx/search` endpoint as the main site. Horse-specific filters (barn, arena, round pen, pasture) are passed as additional keyword terms in the `location` parameter so the Spark/RESO gateway can include them in the MLS remarks/keyword filter.
+
+When a horse-specific feature is selected:
+- `barn` → appends `"barn"` to the location search term
+- `arena` → appends `"arena"`
+- `round-pen` → appends `"round pen"`
+- `pasture` → appends `"pasture"`
+- `horse-property` → appends `"horse property"` (matches the GLVAR MLS horse property flag)
+
+For more precise filtering, the platform server's `/v2/listings` endpoint supports the `q` natural-language parameter (semantic search), which can be used to query: *"horse property with 6-stall barn and arena in Henderson"*.
+
+### SEO notes
+
+The horse site has dedicated:
+- Canonical URL (`/horses/`)
+- Open Graph tags with horse property hero image
+- Twitter Card
+- `RealEstateAgent` + `LocalBusiness` JSON-LD with Henderson address and equestrian area-served data
+- Separate `FAQPage` JSON-LD with 6 horse-property-specific Q&As
+- Meta keywords targeting horse property, A-1 zoning, equestrian estate, and Henderson/Clark County terms
+- `geo.*` meta tags pointing to Henderson coordinates
+
+Submit `https://www.donnasellslv.com/horses/` separately in Google Search Console after launch.
+
+### Post-deployment verification
+
+1. Verify `https://www.donnasellslv.com/horses/` loads with the earthy horse property design
+2. Verify navigation link from main site (`donnasellslv.com/`) to horse site works (if added)
+3. Verify horse property search form hits `/api/idx/search` and renders results
+4. Verify contact form submits to the correct Formspree endpoint
+5. Verify `/horses/` appears in Google Search Console after sitemap submission
+
 
 1. Verify `https://www.donnasellslv.com/` loads correctly
 2. Verify `https://www.donnasellslv.com/api/idx/verify` returns `connected: true`

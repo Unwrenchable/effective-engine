@@ -54,7 +54,7 @@ async function getMarketStats({ city, postalCode, propertyType, lookbackDays = 3
   );
 
   const stats            = activeResult.rows[0];
-  const newListingsRow   = newListingsConds  ? newListingsResult.rows[0]  : { new_listings: 0 };
+  const newListingsRow   = newListingsResult.rows[0] || { new_listings: 0 };
   const priceChangeRow   = priceChangeResult.rows[0];
 
   return {
