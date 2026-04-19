@@ -710,7 +710,7 @@
                arrive in under 3 seconds are bot-speed and are blocked. -->
           <input type="hidden" name="_loadedAt" id="form-loaded-at" />
           <button class="btn-submit" type="submit">Send Message</button>
-          <p class="form-status" id="contact-status" role="status" aria-live="polite" hidden></p>
+          <p class="form-status" id="contact-status" role="status"></p>
         </form>
       </section>
     </main>
@@ -791,7 +791,6 @@
         var statusEl = document.getElementById('contact-status');
         function setStatus(message) {
           if (!statusEl) return;
-          statusEl.hidden = !message;
           statusEl.textContent = message || '';
         }
 

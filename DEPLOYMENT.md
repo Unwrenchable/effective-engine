@@ -41,13 +41,18 @@ Then manually verify:
 4. Deploy
 5. Add custom domain `donnasellslv.com` and enable HTTPS
 
-### Vercel
-1. Import Git repository
-2. Framework preset: Other
-3. Build command: *(none)*
-4. Output directory: `app`
-5. Deploy
-6. Add custom domain and enable HTTPS
+### Vercel *(recommended — auto-configured)*
+A `vercel.json` file at the repo root pre-configures everything:
+- Output directory: `app`
+- Production HTTP security headers
+- Clean URLs and no trailing slash
+
+**Steps:**
+1. Import the Git repository at [vercel.com/new](https://vercel.com/new)
+2. Leave all build settings at their defaults — `vercel.json` handles them
+3. Click **Deploy**
+4. Add your custom domain (`donnasellslv.com`) in Project → Settings → Domains
+5. Vercel automatically provisions HTTPS/SSL
 
 ### GitHub Pages
 1. In repository settings, enable Pages
