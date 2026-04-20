@@ -23,9 +23,26 @@
  */
 
 const config = require('../config');
+const path   = require('path');
 
 // In-process OAuth2 token cache
 let _tokenCache = null; // { access_token, expires_at }
+
+// ─── Mock mode ────────────────────────────────────────────────────────────────
+
+/**
+ * When RESO_MOCK=true, return seed data from db/seed/listings.json instead of
+ * making any live API calls.  Useful for development without a live MLS license.
+ */
+function getMockListings() {
+  const seedFile = path.join(__dirname, '../../db/seed/listings.json');
+  try {
+    return JSON.parse(require('fs').readFileSync(seedFile, 'utf8'));
+  } catch (err) {
+    console.warn('[reso-client] RESO_MOCK=true but could not read db/seed/listings.json:', err.message);
+    return [];
+  }
+}
 
 // ─── Authentication ───────────────────────────────────────────────────────────
 
@@ -168,6 +185,12 @@ async function resoGet(resource, odata = {}) {
  * @returns {Promise<{listings: object[], count: number|null, nextLink: string|null}>}
  */
 async function fetchListings({ filter, modifiedSince, top, skip = 0, select } = {}) {
+  if (config.reso.mock) {
+    const all = getMockListings();
+    const page = all.slice(skip, skip + (top ?? config.sync.batchSize));
+    return { listings: page, count: all.length, nextLink: null };
+  }
+
   const filters = [];
 
   if (filter)       filters.push(filter);
@@ -234,6 +257,9 @@ async function fetchAllListings(modifiedSince, onBatch) {
  * @returns {Promise<{connected:boolean, account:string}>}
  */
 async function verifyConnection() {
+  if (config.reso.mock) {
+    return { connected: true, endpoint: 'mock (RESO_MOCK=true)', mock: true };
+  }
   const result = await resoGet('$metadata', {});
   return { connected: true, endpoint: config.reso.baseUrl };
 }

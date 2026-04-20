@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+
+# Local media files (saved by CDN_PROVIDER=local pipeline) — don't commit photos
+public/media/listings/
+
+# Logs
+*.log
+npm-debug.log*
