@@ -3,7 +3,6 @@
   "rewrites": [
     {
       "source":      "/api/:path*",
-      "_note":       "Replace PLATFORM_SERVER_URL with your server URL — see DEPLOYMENT.md",
       "destination": "PLATFORM_SERVER_URL/api/:path*"
     },
     {
