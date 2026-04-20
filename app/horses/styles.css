@@ -245,6 +245,22 @@ h1 {
   gap: 0.75rem;
 }
 
+.hero-note {
+  margin: 1.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.hero-note a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.hero-note a:hover {
+  text-decoration: underline;
+}
+
 .cta {
   display: inline-block;
   background: var(--accent);

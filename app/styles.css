@@ -123,6 +123,11 @@ img {
   font-weight: 600;
 }
 
+.nav-horses {
+  color: var(--accent) !important;
+  font-weight: 500;
+}
+
 .nav-burger {
   display: none;
   background: none;
@@ -269,6 +274,22 @@ h1 {
 .cta-secondary:hover {
   background: var(--accent);
   color: var(--ink-dark);
+}
+
+.hero-note {
+  margin: 1.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.hero-note a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.hero-note a:hover {
+  text-decoration: underline;
 }
 
 /* ─── Main layout ────────────────────────────────────────────────── */
