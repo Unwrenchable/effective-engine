@@ -900,3 +900,117 @@ h3 {
   body { background: #fff; color: #000; }
   .card { border: 1px solid #ccc; border-radius: 0; }
 }
+
+/* ─── Reviews ────────────────────────────────────────────────────────────── */
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.review-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.review-stars {
+  color: var(--accent);
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.review-text {
+  margin: 0 0 0.75rem 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.review-author {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.reviews-link {
+  text-align: center;
+  margin: 1.5rem 0 0 0;
+}
+
+.reviews-link a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.reviews-link a:hover {
+  text-decoration: underline;
+}
+
+/* ─── Newsletter ─────────────────────────────────────────────────────────── */
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 400px;
+  margin: 1.5rem auto 0;
+}
+
+.newsletter-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.newsletter-form input {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.newsletter-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-newsletter {
+  background: var(--sage);
+  color: var(--text);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  align-self: flex-start;
+}
+
+.btn-newsletter:hover {
+  background: var(--sage-dim);
+  transform: translateY(-1px);
+}
+
+.newsletter-note {
+  margin: 1rem 0 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+@media (max-width: 540px) {
+  .newsletter-form {
+    max-width: 100%;
+  }
+  .btn-newsletter {
+    align-self: stretch;
+  }
+}
