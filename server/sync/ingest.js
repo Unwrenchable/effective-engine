@@ -35,6 +35,9 @@ const { query } = require('../models/db');
 // Track last sync timestamp in DB
 const SYNC_STATE_KEY = 'last_delta_sync';
 
+const fs = require('fs');
+const path = require('path');
+
 // ─── State management ─────────────────────────────────────────────────────────
 
 async function getLastSyncTime() {
@@ -243,11 +246,33 @@ async function fullSync() {
   return { ...stats, total, pages, type: 'full', completedAt: new Date().toISOString() };
 }
 
+/**
+ * Demo sync: Process seeded listings for AI enrichment only (no API fetch).
+ * @returns {Promise<object>} sync stats
+ */
+async function demoSync() {
+  const listingsPath = path.join(__dirname, '../../db/seed/listings.json');
+  const rawListings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+
+  console.log(`[ingest] Demo sync start. Processing ${rawListings.length} seeded listings.`);
+
+  const stats = { upserted: 0, new: 0, priceChanges: 0, statusChanges: 0 };
+
+  // Simulate batch processing (already seeded, just enrich)
+  await processBatch(rawListings.map(l => ({ ...l, ListingId: l.id || `sample-${Date.now()}` })), stats);
+
+  console.log(`[ingest] Demo sync complete. Stats:`, stats);
+  return { ...stats, total: rawListings.length, type: 'demo', completedAt: new Date().toISOString() };
+}
+
 // ─── CLI entry point ──────────────────────────────────────────────────────────
 
 if (require.main === module) {
   const args = process.argv.slice(2);
-  const fn   = args.includes('--full') ? fullSync : deltaSync;
+  let fn;
+  if (args.includes('--full')) fn = fullSync;
+  else if (args.includes('--demo')) fn = demoSync;
+  else fn = deltaSync;
 
   fn()
     .then((result) => {
@@ -260,4 +285,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { deltaSync, fullSync };
+module.exports = { deltaSync, fullSync, demoSync };
