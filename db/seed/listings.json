@@ -122,6 +122,18 @@
         "MediaCategory": "Photo",
         "Order": 1,
         "ShortDescription": "Front Exterior"
+      },
+      {
+        "MediaURL": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800",
+        "MediaCategory": "Photo",
+        "Order": 2,
+        "ShortDescription": "Living Room"
+      },
+      {
+        "MediaURL": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",
+        "MediaCategory": "Photo",
+        "Order": 3,
+        "ShortDescription": "Kitchen"
       }
     ]
   },
@@ -248,6 +260,24 @@
         "MediaCategory": "Photo",
         "Order": 1,
         "ShortDescription": "Property Exterior"
+      },
+      {
+        "MediaURL": "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800",
+        "MediaCategory": "Photo",
+        "Order": 2,
+        "ShortDescription": "Barn Interior"
+      },
+      {
+        "MediaURL": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800",
+        "MediaCategory": "Photo",
+        "Order": 3,
+        "ShortDescription": "Arena"
+      },
+      {
+        "MediaURL": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+        "MediaCategory": "Photo",
+        "Order": 4,
+        "ShortDescription": "Pasture"
       }
     ]
   }
