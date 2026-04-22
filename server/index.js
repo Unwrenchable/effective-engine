@@ -29,6 +29,10 @@
  *   POST /v2/admin/sync          (admin only)
  *   GET  /v2/admin/sync/status   (admin only)
  *   GET  /v2/admin/reso/verify   (admin only)
+ *   GET  /v2/admin/leads         (admin only)
+ *   GET  /v2/admin/leads/:id     (admin only)
+ *   PATCH /v2/admin/leads/:id    (admin only)
+ *   POST /v2/admin/leads/:id/messages (admin only)
  */
 
 const Fastify      = require('fastify');
@@ -121,6 +125,7 @@ async function buildApp() {
   fastify.register(require('./routes/agents'),         { prefix: '/v2/agents' });
   fastify.register(require('./routes/inquiries'),      { prefix: '/v2/inquiries' });
   fastify.register(require('./routes/admin/sync'),     { prefix: '/v2/admin' });
+  fastify.register(require('./routes/admin/leads'),    { prefix: '/v2/admin' });
 
   // ── Error handler ──────────────────────────────────────────────────────────
 

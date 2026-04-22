@@ -53,7 +53,7 @@ const config = {
   reso: {
     baseUrl:      optional('RESO_BASE_URL',   'https://replication.sparkapi.com/Reso/OData'),
     // Spark Platform OAuth2 token endpoint (separate from the RESO data endpoint)
-    tokenUrl:     optional('RESO_TOKEN_URL',  'https://sparkplatform.com/openid/token'),
+    tokenUrl:     optional('RESO_TOKEN_URL',  'https://sparkplatform.com/openid/oauth2/token'),
     clientId:     optional('RESO_CLIENT_ID'),
     clientSecret: optional('RESO_CLIENT_SECRET'),
     apiKey:       optional('RESO_API_KEY'),

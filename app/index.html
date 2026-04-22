@@ -638,12 +638,7 @@
           market valuations - reach out and Donna's team will be in touch
           within one business day.
         </p>
-        <!-- Replace the action URL with your form endpoint (e.g. Formspree, Netlify Forms) before deploying -->
-        <form
-          class="contact-form"
-          method="POST"
-          action="https://formspree.io/f/YOUR_FORM_ID"
-        >
+        <form class="contact-form" id="main-contact-form" novalidate>
           <div class="form-row">
             <label for="contact-name">
               Full Name
@@ -683,11 +678,13 @@
               I'm interested in…
               <select id="contact-interest" name="interest">
                 <option value="">Select an option</option>
-                <option>Buying a property</option>
-                <option>Selling a property</option>
-                <option>Private showing</option>
-                <option>Off-market opportunities</option>
-                <option>Market valuation</option>
+                <option value="showing">Private showing</option>
+                <option value="info">Property information</option>
+                <option value="offer">Making an offer</option>
+                <option value="general">Buying a property</option>
+                <option value="general">Selling a property</option>
+                <option value="general">Off-market opportunities</option>
+                <option value="general">Market valuation</option>
               </select>
             </label>
           </div>
@@ -698,10 +695,17 @@
               name="message"
               rows="4"
               placeholder="Tell me what you're looking for and the best time to connect."
+              required
             ></textarea>
           </label>
-          <!-- Honeypot: hidden from real users; bots fill this in and the
-               submission is silently dropped. Do not remove or label visibly. -->
+          <!-- Opt-in: new listing updates -->
+          <label class="checkbox-label">
+            <input type="checkbox" name="subscribe_to_updates" value="1" />
+            Notify me when new luxury listings match my criteria
+          </label>
+          <!-- Cloudflare Turnstile widget — injected by JS when SITE_KEY is set -->
+          <div id="cf-turnstile-main" class="cf-turnstile-wrap"></div>
+          <!-- Honeypot: hidden from real users; bots fill this in and submission is dropped -->
           <div class="hp-field" aria-hidden="true">
             <label for="contact-url">Website</label>
             <input
@@ -712,9 +716,6 @@
               autocomplete="off"
             />
           </div>
-          <!-- Timestamp token: JS sets this at page-load; submissions that
-               arrive in under 3 seconds are bot-speed and are blocked. -->
-          <input type="hidden" name="_loadedAt" id="form-loaded-at" />
           <button class="btn-submit" type="submit">Send Message</button>
           <p class="form-status" id="contact-status" role="status"></p>
         </form>
@@ -923,34 +924,108 @@
 
       // ─── Bot protection: load-time stamp ───────────────────────────
       var loadedAt = Date.now();
-      var loadField = document.getElementById('form-loaded-at');
-      if (loadField) loadField.value = String(loadedAt);
 
-      // ─── Bot protection: form guard ────────────────────────────────
-      var contactForm = document.querySelector('.contact-form');
-      if (contactForm) {
+      // ─── Cloudflare Turnstile (injected when SITE_KEY meta tag is present) ──
+      // The server sets a <meta name="turnstile-site-key"> when configured.
+      // If absent, Turnstile is not rendered and the server skips verification.
+      (function () {
+        var meta = document.querySelector('meta[name="turnstile-site-key"]');
+        if (!meta) return;
+        var siteKey = meta.getAttribute('content');
+        if (!siteKey) return;
+        var s = document.createElement('script');
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+        s.async = true;
+        s.defer = true;
+        document.head.appendChild(s);
+        // Render widget into placeholder div once script loads
+        s.onload = function () {
+          var el = document.getElementById('cf-turnstile-main');
+          if (el) window.turnstile.render(el, { sitekey: siteKey, theme: 'dark' });
+        };
+      })();
+
+      // ─── Contact form → /v2/inquiries ──────────────────────────────
+      var mainContactForm = document.getElementById('main-contact-form');
+      if (mainContactForm) {
         var statusEl = document.getElementById('contact-status');
-        function setStatus(message) {
+        function setStatus(msg, isError) {
           if (!statusEl) return;
-          statusEl.textContent = message || '';
+          statusEl.textContent = msg || '';
+          statusEl.style.color = isError ? '#e57373' : '#81c784';
         }
 
-        contactForm.addEventListener('submit', function (e) {
+        mainContactForm.addEventListener('submit', function (e) {
+          e.preventDefault();
           setStatus('');
-          // 1. Honeypot check - real users leave this blank
-          var honey = contactForm.querySelector('input[name="_gotcha"]');
-          if (honey && honey.value !== '') {
-            e.preventDefault();
-            setStatus('Form validation failed. Please try again or contact Donna directly through social links below.');
+
+          // 1. Honeypot check
+          var honey = mainContactForm.querySelector('input[name="_gotcha"]');
+          if (honey && honey.value !== '') return;
+
+          // 2. Time-floor check (< 3 s = bot speed)
+          if (Date.now() - loadedAt < 3000) {
+            setStatus('Please wait a moment and try again.', true);
             return;
           }
-          // 2. Time-floor check - block submissions faster than 3 seconds
-          var elapsed = Date.now() - loadedAt;
-          if (elapsed < 3000) {
-            e.preventDefault();
-            setStatus('Please try again in a moment.');
+
+          var nameVal    = (mainContactForm.querySelector('[name="name"]').value || '').trim();
+          var emailVal   = (mainContactForm.querySelector('[name="email"]').value || '').trim();
+          var messageVal = (mainContactForm.querySelector('[name="message"]').value || '').trim();
+
+          if (!nameVal || !emailVal || !messageVal) {
+            setStatus('Please fill in your name, email, and message.', true);
             return;
           }
+
+          // 3. Gather interest → inquiry_type mapping
+          var interestEl = mainContactForm.querySelector('[name="interest"]');
+          var interestVal = interestEl ? interestEl.value : '';
+          var inquiryType = interestVal || 'general';
+
+          // 4. Turnstile token (may be absent if Turnstile not configured)
+          var tsWidget = mainContactForm.querySelector('[name="cf-turnstile-response"]');
+          var tsToken  = tsWidget ? tsWidget.value : '';
+
+          // 5. Opt-in
+          var subEl     = mainContactForm.querySelector('[name="subscribe_to_updates"]');
+          var subscribe = subEl ? subEl.checked : false;
+
+          var btn = mainContactForm.querySelector('button[type="submit"]');
+          if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+          var payload = {
+            name:                 nameVal,
+            email:                emailVal,
+            phone:                (mainContactForm.querySelector('[name="phone"]').value || '').trim() || undefined,
+            message:              messageVal,
+            inquiry_type:         inquiryType,
+            lead_source:          'main_site',
+            subscribe_to_updates: subscribe,
+          };
+          if (tsToken) payload.cf_turnstile_token = tsToken;
+
+          fetch('/v2/inquiries', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body:    JSON.stringify(payload),
+          })
+            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+            .then(function (r) {
+              if (r.ok) {
+                mainContactForm.reset();
+                if (window.turnstile) window.turnstile.reset();
+                setStatus('✓ Message sent! We\'ll be in touch within one business day.', false);
+              } else {
+                setStatus(r.data.error || 'Submission failed. Please try again.', true);
+              }
+            })
+            .catch(function () {
+              setStatus('Network error. Please try again.', true);
+            })
+            .finally(function () {
+              if (btn) { btn.disabled = false; btn.textContent = 'Send Message'; }
+            });
         });
       }
     </script>
