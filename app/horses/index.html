@@ -866,12 +866,7 @@
           on your current equestrian property - reach out and we'll respond within
           one business day.
         </p>
-        <!-- Replace the action URL with your form endpoint before deploying -->
-        <form
-          class="contact-form"
-          method="POST"
-          action="https://formspree.io/f/YOUR_HORSE_FORM_ID"
-        >
+        <form class="contact-form" id="horse-contact-form" novalidate>
           <div class="form-row">
             <label for="contact-name">
               Your Name
@@ -911,12 +906,12 @@
               I'm looking to…
               <select id="contact-interest" name="interest">
                 <option value="">Select an option</option>
-                <option>Buy a horse property</option>
-                <option>Sell my horse property</option>
-                <option>Find out my property's value</option>
-                <option>Ask about zoning or permits</option>
-                <option>Learn about the Henderson horse community</option>
-                <option>Other horse property question</option>
+                <option value="general">Buy a horse property</option>
+                <option value="general">Sell my horse property</option>
+                <option value="general">Find out my property's value</option>
+                <option value="general">Ask about zoning or permits</option>
+                <option value="general">Learn about the Henderson horse community</option>
+                <option value="general">Other horse property question</option>
               </select>
             </label>
           </div>
@@ -937,14 +932,21 @@
               name="message"
               rows="5"
               placeholder="Acreage needed, stall count, must-haves (arena, round pen, trails nearby), budget range, and the best time to reach you."
+              required
             ></textarea>
           </label>
+          <!-- Opt-in: new horse property listing updates -->
+          <label class="checkbox-label">
+            <input type="checkbox" name="subscribe_to_updates" value="1" />
+            Notify me when new horse properties hit the market
+          </label>
+          <!-- Cloudflare Turnstile widget -->
+          <div id="cf-turnstile-horse" class="cf-turnstile-wrap"></div>
           <!-- Honeypot -->
           <div class="hp-field" aria-hidden="true">
             <label for="contact-url">Website</label>
             <input id="contact-url" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
           </div>
-          <input type="hidden" name="_loadedAt" id="form-loaded-at" />
           <button class="btn-submit" type="submit">Send Message</button>
           <p class="form-status" id="contact-status" role="status"></p>
         </form>
@@ -1162,10 +1164,101 @@
       })();
 
       // ─── Form bot protection: timestamp ───────────────────────────
+      var horseLoadedAt = Date.now();
+
+      // ─── Cloudflare Turnstile ──────────────────────────────────────
       (function () {
-        var field = document.getElementById('form-loaded-at');
-        if (field) field.value = String(Date.now());
+        var meta = document.querySelector('meta[name="turnstile-site-key"]');
+        if (!meta) return;
+        var siteKey = meta.getAttribute('content');
+        if (!siteKey) return;
+        var s = document.createElement('script');
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+        s.async = true;
+        s.defer = true;
+        document.head.appendChild(s);
+        s.onload = function () {
+          var el = document.getElementById('cf-turnstile-horse');
+          if (el) window.turnstile.render(el, { sitekey: siteKey, theme: 'dark' });
+        };
       })();
+
+      // ─── Horse contact form → /v2/inquiries ───────────────────────
+      var horseContactForm = document.getElementById('horse-contact-form');
+      if (horseContactForm) {
+        var horseStatusEl = document.getElementById('contact-status');
+        function setHorseStatus(msg, isError) {
+          if (!horseStatusEl) return;
+          horseStatusEl.textContent = msg || '';
+          horseStatusEl.style.color = isError ? '#e57373' : '#81c784';
+        }
+
+        horseContactForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          setHorseStatus('');
+
+          // 1. Honeypot check
+          var honey = horseContactForm.querySelector('input[name="_gotcha"]');
+          if (honey && honey.value !== '') return;
+
+          // 2. Time-floor check
+          if (Date.now() - horseLoadedAt < 3000) {
+            setHorseStatus('Please wait a moment and try again.', true);
+            return;
+          }
+
+          var nameVal    = (horseContactForm.querySelector('[name="name"]').value || '').trim();
+          var emailVal   = (horseContactForm.querySelector('[name="email"]').value || '').trim();
+          var messageVal = (horseContactForm.querySelector('[name="message"]').value || '').trim();
+
+          if (!nameVal || !emailVal || !messageVal) {
+            setHorseStatus('Please fill in your name, email, and message.', true);
+            return;
+          }
+
+          var tsWidget = horseContactForm.querySelector('[name="cf-turnstile-response"]');
+          var tsToken  = tsWidget ? tsWidget.value : '';
+
+          var subEl     = horseContactForm.querySelector('[name="subscribe_to_updates"]');
+          var subscribe = subEl ? subEl.checked : false;
+
+          var btn = horseContactForm.querySelector('button[type="submit"]');
+          if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+          var payload = {
+            name:                 nameVal,
+            email:                emailVal,
+            phone:                (horseContactForm.querySelector('[name="phone"]').value || '').trim() || undefined,
+            message:              messageVal,
+            inquiry_type:         'general',
+            lead_source:          'horse_site',
+            subscribe_to_updates: subscribe,
+          };
+          if (tsToken) payload.cf_turnstile_token = tsToken;
+
+          fetch('/v2/inquiries', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body:    JSON.stringify(payload),
+          })
+            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+            .then(function (r) {
+              if (r.ok) {
+                horseContactForm.reset();
+                if (window.turnstile) window.turnstile.reset();
+                setHorseStatus('✓ Message sent! We\'ll be in touch within one business day.', false);
+              } else {
+                setHorseStatus(r.data.error || 'Submission failed. Please try again.', true);
+              }
+            })
+            .catch(function () {
+              setHorseStatus('Network error. Please try again.', true);
+            })
+            .finally(function () {
+              if (btn) { btn.disabled = false; btn.textContent = 'Send Message'; }
+            });
+        });
+      }
     </script>
   </body>
 </html>

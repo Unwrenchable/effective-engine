@@ -47,8 +47,13 @@ const config = {
   },
 
   // RESO Web API (direct MLS feed — set RESO_BASE_URL to go live)
+  // GLVAR uses the Spark Platform (flexmls).  Credentials at:
+  //   https://www.sparkplatform.com/register
+  // Then request GLVAR MLS access via your GLVAR membership.
   reso: {
-    baseUrl:      optional('RESO_BASE_URL', 'https://replication.sparkapi.com/Reso/OData'),
+    baseUrl:      optional('RESO_BASE_URL',   'https://replication.sparkapi.com/Reso/OData'),
+    // Spark Platform OAuth2 token endpoint (separate from the RESO data endpoint)
+    tokenUrl:     optional('RESO_TOKEN_URL',  'https://sparkplatform.com/openid/oauth2/token'),
     clientId:     optional('RESO_CLIENT_ID'),
     clientSecret: optional('RESO_CLIENT_SECRET'),
     apiKey:       optional('RESO_API_KEY'),
@@ -123,8 +128,16 @@ const config = {
   },
 
   admin: {
-    email:           optional('ADMIN_EMAIL', 'admin@donnasellslv.com'),
+    email:           optional('ADMIN_EMAIL', 'Donna@donnasellslv.com'),
     initialPassword: optional('ADMIN_INITIAL_PASSWORD', 'change_me_immediately'),
+  },
+
+  // Cloudflare Turnstile (human verification on contact forms)
+  // Get keys at: https://dash.cloudflare.com → Turnstile
+  // Leave blank to skip CAPTCHA verification (development only).
+  turnstile: {
+    secretKey: optional('TURNSTILE_SECRET_KEY'),
+    siteKey:   optional('TURNSTILE_SITE_KEY'),
   },
 };
 

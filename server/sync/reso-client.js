@@ -1,23 +1,30 @@
 'use strict';
 
 /**
- * RESO Web API (OData 4.0) client.
+ * RESO Web API (OData 4.0) client — GLVAR / Spark Platform edition.
  *
- * This replaces the Spark-specific `api/idx/_lib/client.js` proxy
- * with a standards-based RESO Web API client suitable for a direct
- * GLVAR MLS data feed under a Vendor/Franchisor or RESO Certification license.
+ * GLVAR (Greater Las Vegas Association of REALTORS®) delivers MLS data
+ * through the Spark Platform (flexmls).  The data endpoint and token
+ * endpoint are on different hostnames:
  *
- * Standard RESO Web API endpoint patterns:
- *   GET /Property               — listings (equivalent to Spark /v1/listings)
+ *   RESO data endpoint:   https://replication.sparkapi.com/Reso/OData
+ *   OAuth2 token endpoint: https://sparkplatform.com/openid/token
+ *
+ * How to get live credentials:
+ *   1. Register a Spark Platform developer account:
+ *        https://www.sparkplatform.com/register
+ *   2. Create an application in the Spark Developer Portal to receive
+ *        RESO_CLIENT_ID and RESO_CLIENT_SECRET.
+ *   3. Request GLVAR MLS data access through your GLVAR membership.
+ *        (login at https://lasvegasrealtor.com → MLS Resources → Data Access)
+ *   4. Set RESO_MOCK=false and fill RESO_CLIENT_ID / RESO_CLIENT_SECRET in .env.
+ *
+ * Standard RESO Web API resource paths:
+ *   GET /Property               — listings
  *   GET /Member                 — agents
  *   GET /Office                 — offices
- *   GET /Media                  — listing photos/media
- *   GET /OpenHouse              — open house events
- *
- * Authentication: OAuth2 Client Credentials (same as Spark), or static API key.
- *
- * GLVAR production RESO endpoint (once licensed):
- *   https://replication.sparkapi.com/Reso/OData
+ *   GET /Media                  — listing photos
+ *   GET /OpenHouse              — open houses
  *
  * Reference: https://www.reso.org/reso-web-api/
  */
@@ -59,7 +66,8 @@ async function getBearerToken() {
   if (!clientId || !clientSecret) {
     throw new ResoConfigError(
       'RESO credentials not configured. Set RESO_CLIENT_ID and RESO_CLIENT_SECRET ' +
-      '(or RESO_API_KEY) as environment variables.'
+      '(or RESO_API_KEY) as environment variables.\n' +
+      'Register at https://www.sparkplatform.com/register to obtain Spark/GLVAR credentials.'
     );
   }
 
@@ -69,8 +77,10 @@ async function getBearerToken() {
     return _tokenCache.access_token;
   }
 
-  // RESO OAuth2 token endpoint (same as Spark)
-  const tokenUrl = `${baseUrl.replace('/Reso/OData', '')}/oauth2/grant`;
+  // Use the explicit RESO_TOKEN_URL (defaults to Spark Platform OAuth2 endpoint).
+  // NOTE: For Spark/GLVAR the token URL is sparkplatform.com/openid/token —
+  //       it is NOT derived from the RESO data endpoint hostname.
+  const tokenUrl = config.reso.tokenUrl;
   const body     = new URLSearchParams({
     grant_type:    'client_credentials',
     client_id:     clientId,
