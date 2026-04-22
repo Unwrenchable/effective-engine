@@ -25,7 +25,7 @@
     <meta property="og:title" content="Donna Sells LV | #1 Luxury Real Estate Las Vegas, Henderson &amp; Summerlin" />
     <meta
       property="og:description"
-      content="Las Vegas Valley's premier luxury real estate specialist — Summerlin, Henderson, Green Valley, Anthem, Southern Highlands, and beyond. Exclusive listings, off-market access, and concierge service."
+      content="Las Vegas Valley's premier luxury real estate specialist - Summerlin, Henderson, Green Valley, Anthem, Southern Highlands, and beyond. Exclusive listings, off-market access, and concierge service."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.donnasellslv.com/" />
@@ -43,7 +43,7 @@
     <meta name="twitter:title" content="Donna Sells LV | #1 Luxury Real Estate Las Vegas, Henderson &amp; Summerlin" />
     <meta
       name="twitter:description"
-      content="Las Vegas Valley's premier luxury real estate specialist — Summerlin, Henderson, Green Valley, Anthem, Southern Highlands, and beyond."
+      content="Las Vegas Valley's premier luxury real estate specialist - Summerlin, Henderson, Green Valley, Anthem, Southern Highlands, and beyond."
     />
     <meta
       name="twitter:image"
@@ -210,7 +210,7 @@
         <p class="eyebrow">Las Vegas Valley's #1 Luxury Real Estate Specialist</p>
         <h1>Donna Sells LV</h1>
         <p class="lead">
-          Exclusive access to Las Vegas Valley's finest properties — from guard-gated
+          Exclusive access to Las Vegas Valley's finest properties - from guard-gated
           estates in Summerlin and Henderson to Strip penthouses. Private showings,
           off-market opportunities, and concierge service from first call to closing.
         </p>
@@ -539,7 +539,7 @@
         <h2 id="social-heading">Follow Along</h2>
         <p class="section-intro">
           New listings, market updates, and behind-the-scenes Las Vegas luxury
-          real estate — follow on your platform of choice.
+          real estate - follow on your platform of choice.
         </p>
         <nav aria-label="Social media links" class="social-links">
           <a href="https://www.instagram.com/donnasellslv/" rel="noopener noreferrer" target="_blank">Instagram</a>
@@ -558,21 +558,21 @@
               “Donna handled every detail from staging to negotiation and sold our Summerlin
               home above ask in under two weeks.”
             </p>
-            <cite>— Seller, The Ridges, Summerlin</cite>
+            <cite>- Seller, The Ridges, Summerlin</cite>
           </blockquote>
           <blockquote class="testimonial">
             <p>
               “We relocated from out of state and found the perfect Henderson penthouse with
               Donna’s private network before it hit the MLS.”
             </p>
-            <cite>— Buyer, MacDonald Ranch, Henderson</cite>
+            <cite>- Buyer, MacDonald Ranch, Henderson</cite>
           </blockquote>
           <blockquote class="testimonial">
             <p>
               “From Anthem to Southern Highlands, Donna knew every guard-gated community
               inside-out. We found our forever home in three showings.”
             </p>
-            <cite>— Buyer, Anthem Country Club, Henderson</cite>
+            <cite>- Buyer, Anthem Country Club, Henderson</cite>
           </blockquote>
         </div>
       </section>
@@ -584,7 +584,7 @@
           <details>
             <summary>What areas of the Las Vegas Valley does Donna serve?</summary>
             <p>
-              Donna serves the entire Las Vegas Valley — Summerlin, Henderson, North Las Vegas,
+              Donna serves the entire Las Vegas Valley - Summerlin, Henderson, North Las Vegas,
               Green Valley, Anthem, Southern Highlands, Centennial Hills, Aliante, Skye Canyon,
               Boulder City, Spring Valley, Enterprise, Paradise, and all surrounding communities.
             </p>
@@ -635,7 +635,7 @@
         <h2 id="contact-heading">Concierge Contact</h2>
         <p class="section-intro">
           Private showings, seller strategy, off-market opportunities, and
-          market valuations — reach out and Donna's team will be in touch
+          market valuations - reach out and Donna's team will be in touch
           within one business day.
         </p>
         <!-- Replace the action URL with your form endpoint (e.g. Formspree, Netlify Forms) before deploying -->
@@ -809,15 +809,21 @@
           }
 
           const cards = data.listings.map(function (l) {
-            const photo   = (l.Photos && l.Photos[0] && l.Photos[0].Uri800) || '';
-            const address = [l.StreetNumber, l.StreetName, l.UnitNumber].filter(Boolean).join(' ');
-            const cityLine = [l.City, l.StateOrProvince, l.PostalCode].filter(Boolean).join(', ');
-            const price   = l.ListPrice ? '$' + Number(l.ListPrice).toLocaleString('en-US') : 'Price on request';
-            const beds    = l.BedroomsTotal   ? l.BedroomsTotal + ' bd'   : '';
-            const baths   = l.BathroomsTotalInteger ? l.BathroomsTotalInteger + ' ba' : '';
-            const sqft    = l.LivingArea ? Number(l.LivingArea).toLocaleString('en-US') + ' sqft' : '';
+            const photo = (l.photos && l.photos[0] && (l.photos[0].url || l.photos[0].Uri800 || l.photos[0].MediaURL))
+              || (l.Photos && l.Photos[0] && (l.Photos[0].Uri800 || l.Photos[0].MediaURL))
+              || '';
+            const address = [l.street_number || l.StreetNumber, l.street_name || l.StreetName, l.unit_number || l.UnitNumber].filter(Boolean).join(' ');
+            const cityLine = [l.city || l.City, l.state_or_province || l.StateOrProvince, l.postal_code || l.PostalCode].filter(Boolean).join(', ');
+            const listPrice = l.list_price || l.ListPrice;
+            const bedsTotal = l.bedrooms_total || l.BedroomsTotal;
+            const bathsTotal = l.bathrooms_total || l.BathroomsTotalInteger || l.BathroomsTotal;
+            const livingArea = l.living_area || l.LivingArea;
+            const price   = listPrice ? '$' + Number(listPrice).toLocaleString('en-US') : 'Price on request';
+            const beds    = bedsTotal ? bedsTotal + ' bd' : '';
+            const baths   = bathsTotal ? bathsTotal + ' ba' : '';
+            const sqft    = livingArea ? Number(livingArea).toLocaleString('en-US') + ' sqft' : '';
             const details = [beds, baths, sqft].filter(Boolean).join(' · ');
-            const mlsId   = l.ListingId || '';
+            const mlsId   = l.listing_id || l.ListingId || '';
             const attr    = (l._attribution && l._attribution.courtesyOf) || '';
             const imgTag  = photo
               ? `<img src="${escapeHtml(photo)}" alt="Photo of ${escapeHtml(address)}" loading="lazy" />`
@@ -931,14 +937,14 @@
 
         contactForm.addEventListener('submit', function (e) {
           setStatus('');
-          // 1. Honeypot check — real users leave this blank
+          // 1. Honeypot check - real users leave this blank
           var honey = contactForm.querySelector('input[name="_gotcha"]');
           if (honey && honey.value !== '') {
             e.preventDefault();
             setStatus('Form validation failed. Please try again or contact Donna directly through social links below.');
             return;
           }
-          // 2. Time-floor check — block submissions faster than 3 seconds
+          // 2. Time-floor check - block submissions faster than 3 seconds
           var elapsed = Date.now() - loadedAt;
           if (elapsed < 3000) {
             e.preventDefault();
