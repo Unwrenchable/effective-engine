@@ -809,15 +809,21 @@
           }
 
           const cards = data.listings.map(function (l) {
-            const photo   = (l.Photos && l.Photos[0] && l.Photos[0].Uri800) || '';
-            const address = [l.StreetNumber, l.StreetName, l.UnitNumber].filter(Boolean).join(' ');
-            const cityLine = [l.City, l.StateOrProvince, l.PostalCode].filter(Boolean).join(', ');
-            const price   = l.ListPrice ? '$' + Number(l.ListPrice).toLocaleString('en-US') : 'Price on request';
-            const beds    = l.BedroomsTotal   ? l.BedroomsTotal + ' bd'   : '';
-            const baths   = l.BathroomsTotalInteger ? l.BathroomsTotalInteger + ' ba' : '';
-            const sqft    = l.LivingArea ? Number(l.LivingArea).toLocaleString('en-US') + ' sqft' : '';
+            const photo = (l.photos && l.photos[0] && (l.photos[0].url || l.photos[0].Uri800 || l.photos[0].MediaURL))
+              || (l.Photos && l.Photos[0] && (l.Photos[0].Uri800 || l.Photos[0].MediaURL))
+              || '';
+            const address = [l.street_number || l.StreetNumber, l.street_name || l.StreetName, l.unit_number || l.UnitNumber].filter(Boolean).join(' ');
+            const cityLine = [l.city || l.City, l.state_or_province || l.StateOrProvince, l.postal_code || l.PostalCode].filter(Boolean).join(', ');
+            const listPrice = l.list_price || l.ListPrice;
+            const bedsTotal = l.bedrooms_total || l.BedroomsTotal;
+            const bathsTotal = l.bathrooms_total || l.BathroomsTotalInteger || l.BathroomsTotal;
+            const livingArea = l.living_area || l.LivingArea;
+            const price   = listPrice ? '$' + Number(listPrice).toLocaleString('en-US') : 'Price on request';
+            const beds    = bedsTotal ? bedsTotal + ' bd' : '';
+            const baths   = bathsTotal ? bathsTotal + ' ba' : '';
+            const sqft    = livingArea ? Number(livingArea).toLocaleString('en-US') + ' sqft' : '';
             const details = [beds, baths, sqft].filter(Boolean).join(' · ');
-            const mlsId   = l.ListingId || '';
+            const mlsId   = l.listing_id || l.ListingId || '';
             const attr    = (l._attribution && l._attribution.courtesyOf) || '';
             const imgTag  = photo
               ? `<img src="${escapeHtml(photo)}" alt="Photo of ${escapeHtml(address)}" loading="lazy" />`
