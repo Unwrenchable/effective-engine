@@ -26,13 +26,17 @@
  *   GET  /v2/agents/:mlsId
  *   GET  /v2/agents/:mlsId/listings
  *   POST /v2/inquiries
- *   POST /v2/admin/sync          (admin only)
- *   GET  /v2/admin/sync/status   (admin only)
- *   GET  /v2/admin/reso/verify   (admin only)
- *   GET  /v2/admin/leads         (admin only)
- *   GET  /v2/admin/leads/:id     (admin only)
- *   PATCH /v2/admin/leads/:id    (admin only)
- *   POST /v2/admin/leads/:id/messages (admin only)
+ *   POST /v2/newsletter/subscribe
+ *   GET  /v2/newsletter/unsubscribe
+ *   POST /v2/admin/sync                   (admin only)
+ *   GET  /v2/admin/sync/status            (admin only)
+ *   GET  /v2/admin/reso/verify            (admin only)
+ *   GET  /v2/admin/leads                  (admin only)
+ *   GET  /v2/admin/leads/:id              (admin only)
+ *   PATCH /v2/admin/leads/:id             (admin only)
+ *   POST /v2/admin/leads/:id/messages     (admin only)
+ *   GET  /v2/admin/newsletter             (admin only)
+ *   DELETE /v2/admin/newsletter/:id       (admin only)
  */
 
 const Fastify      = require('fastify');
@@ -123,9 +127,11 @@ async function buildApp() {
   fastify.register(require('./routes/neighborhoods'),  { prefix: '/v2/neighborhoods' });
   fastify.register(require('./routes/alerts'),         { prefix: '/v2/alerts' });
   fastify.register(require('./routes/agents'),         { prefix: '/v2/agents' });
-  fastify.register(require('./routes/inquiries'),      { prefix: '/v2/inquiries' });
-  fastify.register(require('./routes/admin/sync'),     { prefix: '/v2/admin' });
-  fastify.register(require('./routes/admin/leads'),    { prefix: '/v2/admin' });
+  fastify.register(require('./routes/inquiries'),           { prefix: '/v2/inquiries' });
+  fastify.register(require('./routes/newsletter'),          { prefix: '/v2/newsletter' });
+  fastify.register(require('./routes/admin/sync'),          { prefix: '/v2/admin' });
+  fastify.register(require('./routes/admin/leads'),         { prefix: '/v2/admin' });
+  fastify.register(require('./routes/admin/newsletter'),    { prefix: '/v2/admin' });
 
   // ── Error handler ──────────────────────────────────────────────────────────
 
