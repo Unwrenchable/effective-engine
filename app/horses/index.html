@@ -791,7 +791,7 @@
         <p class="section-intro">
           Sign up for horse property market updates, new listings, and Henderson equestrian community news.
         </p>
-        <form class="newsletter-form" action="https://formspree.io/f/YOUR_NEWSLETTER_FORM_ID" method="POST">
+        <form class="newsletter-form" id="newsletter-form" novalidate>
           <label for="newsletter-email">
             Email Address
             <input
@@ -805,6 +805,7 @@
           </label>
           <button class="btn-newsletter" type="submit">Sign Up</button>
         </form>
+        <p class="form-status newsletter-status" id="newsletter-status" role="status"></p>
         <p class="newsletter-note">
           No spam, unsubscribe anytime. Your information stays private.
         </p>
@@ -1256,6 +1257,59 @@
             })
             .finally(function () {
               if (btn) { btn.disabled = false; btn.textContent = 'Send Message'; }
+            });
+        });
+      }
+
+      // ─── Newsletter form → /v2/newsletter/subscribe ────────────────
+      var newsletterForm = document.getElementById('newsletter-form');
+      if (newsletterForm) {
+        var newsletterStatusEl = document.getElementById('newsletter-status');
+        function setNewsletterStatus(msg, isError) {
+          if (!newsletterStatusEl) return;
+          newsletterStatusEl.textContent = msg || '';
+          newsletterStatusEl.style.color = isError ? '#e57373' : '#81c784';
+        }
+
+        newsletterForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          setNewsletterStatus('');
+
+          var emailVal = (newsletterForm.querySelector('[name="email"]').value || '').trim();
+          if (!emailVal) {
+            setNewsletterStatus('Please enter your email address.', true);
+            return;
+          }
+
+          var tsWidget = newsletterForm.querySelector('[name="cf-turnstile-response"]');
+          var tsToken  = tsWidget ? tsWidget.value : '';
+
+          var btn = newsletterForm.querySelector('button[type="submit"]');
+          if (btn) { btn.disabled = true; btn.textContent = 'Subscribing…'; }
+
+          var payload = { email: emailVal, source: 'horse_site' };
+          if (tsToken) payload.cf_turnstile_token = tsToken;
+
+          fetch('/v2/newsletter/subscribe', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body:    JSON.stringify(payload),
+          })
+            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+            .then(function (r) {
+              if (r.ok) {
+                newsletterForm.reset();
+                if (window.turnstile) window.turnstile.reset();
+                setNewsletterStatus('✓ You\'re subscribed! Watch for horse property updates from Donna.', false);
+              } else {
+                setNewsletterStatus(r.data.error || 'Subscription failed. Please try again.', true);
+              }
+            })
+            .catch(function () {
+              setNewsletterStatus('Network error. Please try again.', true);
+            })
+            .finally(function () {
+              if (btn) { btn.disabled = false; btn.textContent = 'Sign Up'; }
             });
         });
       }
