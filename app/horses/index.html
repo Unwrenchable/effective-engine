@@ -212,7 +212,7 @@
           <a class="cta cta-outline" href="#contact">Talk to Donna</a>
         </div>
         <p class="hero-note">
-          <a href="/">🏠 Also serving Las Vegas luxury real estate</a>
+          <a href="/"><img class="inline-icon" src="/icons/house-line.svg" alt="" aria-hidden="true" /> Also serving Las Vegas luxury real estate</a>
         </p>
       </div>
     </header>
@@ -1063,24 +1063,40 @@
           }
 
           const cards = data.listings.map(function (l) {
-            const photo = (l.photos && l.photos[0] && (l.photos[0].url || l.photos[0].Uri800 || l.photos[0].MediaURL))
-              || (l.Photos && l.Photos[0] && (l.Photos[0].Uri800 || l.Photos[0].MediaURL))
-              || '';
-            const address = [l.street_number || l.StreetNumber, l.street_name || l.StreetName, l.unit_number || l.UnitNumber].filter(Boolean).join(' ');
-            const cityLine = [l.city || l.City, l.state_or_province || l.StateOrProvince, l.postal_code || l.PostalCode].filter(Boolean).join(', ');
-            const listPrice = l.list_price || l.ListPrice;
-            const price   = listPrice ? '$' + Number(listPrice).toLocaleString('en-US') : 'Price on request';
-            const bedsTotal = l.bedrooms_total || l.BedroomsTotal;
-            const bathsTotal = l.bathrooms_total || l.BathroomsTotalInteger || l.BathroomsTotal;
-            const livingArea = l.living_area || l.LivingArea;
-            const lotSizeAcres = l.lot_size_acres || l.LotSizeAcres;
-            const beds    = bedsTotal ? bedsTotal + ' bd' : '';
-            const baths   = bathsTotal ? bathsTotal + ' ba' : '';
-            const sqft    = livingArea ? Number(livingArea).toLocaleString('en-US') + ' sqft' : '';
-            const acres   = lotSizeAcres ? Number(lotSizeAcres).toFixed(2) + ' ac' : '';
+            const photoList = l.Photos || l.photos || [];
+            const firstPhoto = photoList[0] || null;
+            const photo = firstPhoto
+              ? (firstPhoto.Uri800 || firstPhoto.uri800 || firstPhoto.url || firstPhoto.MediaURL || '')
+              : '';
+
+            const address = [
+              l.StreetNumber || l.street_number,
+              l.StreetName || l.street_name,
+              l.UnitNumber || l.unit_number,
+            ].filter(Boolean).join(' ');
+
+            const cityLine = [
+              l.City || l.city,
+              l.StateOrProvince || l.state_or_province,
+              l.PostalCode || l.postal_code,
+            ].filter(Boolean).join(', ');
+
+            const listPrice = l.ListPrice || l.list_price;
+            const bedsVal = l.BedroomsTotal || l.bedrooms_total;
+            const bathsVal = l.BathroomsTotalInteger || l.bathrooms_total;
+            const livingArea = l.LivingArea || l.living_area;
+            const lotSqft = l.LotSizeSquareFeet || l.lot_size_sqft;
+
+            const price = listPrice ? '$' + Number(listPrice).toLocaleString('en-US') : 'Price on request';
+            const beds = bedsVal ? bedsVal + ' bd' : '';
+            const baths = bathsVal ? bathsVal + ' ba' : '';
+            const sqft = livingArea ? Number(livingArea).toLocaleString('en-US') + ' sqft' : '';
+            const acres = lotSqft ? (Number(lotSqft) / 43560).toFixed(2) + ' ac' : '';
             const details = [beds, baths, sqft, acres].filter(Boolean).join(' · ');
-            const mlsId   = l.listing_id || l.ListingId || '';
-            const attr    = (l._attribution && l._attribution.courtesyOf) || '';
+            const mlsId = l.ListingId || l.listing_id || l.id || '';
+            const attr = (l._attribution && l._attribution.courtesyOf)
+              || l.attribution_courtesy_of
+              || '';
             const imgTag  = photo
               ? `<img src="${escapeHtml(photo)}" alt="Photo of ${escapeHtml(address)}" loading="lazy" />`
               : '<div class="idx-no-photo" aria-hidden="true"></div>';

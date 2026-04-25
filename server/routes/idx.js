@@ -99,11 +99,14 @@ module.exports = async function idxRoutes(fastify) {
       
       // Fallback to mock data
       const mockListings = getMockListings();
-      const filtered = mockListings.filter(listing => {
-        if (minPrice && listing.ListPrice < minPrice) return false;
-        if (maxPrice && listing.ListPrice > maxPrice) return false;
-        if (beds && listing.BedroomsTotal < beds) return false;
-        if (location && !listing.City.toLowerCase().includes(location.toLowerCase())) return false;
+      const filtered = mockListings.filter((listing) => {
+        if (minPrice && Number(listing.ListPrice || 0) < minPrice) return false;
+        if (maxPrice && Number(listing.ListPrice || 0) > maxPrice) return false;
+        if (beds && Number(listing.BedroomsTotal || 0) < beds) return false;
+        if (location) {
+          const city = String(listing.City || '').toLowerCase();
+          if (!city.includes(String(location).toLowerCase())) return false;
+        }
         return true;
       });
 

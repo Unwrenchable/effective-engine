@@ -1,0 +1,60 @@
+[
+  {
+    "name": "New Listing Onboarding",
+    "description": "Complete workflow for onboarding a new luxury property listing",
+    "steps": [
+      {
+        "agent_id": "market-analyst",
+        "task": "Analyze current market trends and comparable sales for the property location"
+      },
+      {
+        "agent_id": "listing-optimizer",
+        "task": "Generate compelling AI-written description with SEO optimization"
+      },
+      {
+        "agent_id": "compliance-checker",
+        "task": "Verify listing compliance with GLVAR and fair housing regulations"
+      },
+      {
+        "agent_id": "virtual-assistant",
+        "task": "Prepare automated inquiry responses and scheduling templates"
+      }
+    ]
+  },
+  {
+    "name": "Client Acquisition",
+    "description": "Workflow for acquiring and qualifying new luxury real estate clients",
+    "steps": [
+      {
+        "agent_id": "client-matcher",
+        "task": "Analyze client preferences and budget requirements"
+      },
+      {
+        "agent_id": "market-analyst",
+        "task": "Provide market insights tailored to client needs"
+      },
+      {
+        "agent_id": "virtual-assistant",
+        "task": "Generate personalized property recommendations and outreach"
+      }
+    ]
+  },
+  {
+    "name": "Transaction Management",
+    "description": "End-to-end workflow for managing luxury real estate transactions",
+    "steps": [
+      {
+        "agent_id": "compliance-checker",
+        "task": "Review all transaction documents for legal compliance"
+      },
+      {
+        "agent_id": "market-analyst",
+        "task": "Monitor market conditions during transaction period"
+      },
+      {
+        "agent_id": "virtual-assistant",
+        "task": "Coordinate scheduling and communication between parties"
+      }
+    ]
+  }
+]

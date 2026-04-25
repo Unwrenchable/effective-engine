@@ -1,0 +1,52 @@
+[
+  {
+    "id": "market-analyst",
+    "role": "Market Analyst Agent",
+    "description": "Analyzes real estate market trends, pricing, and neighborhood data to provide insights for luxury properties in Las Vegas Valley.",
+    "tags": ["real-estate", "market-analysis", "luxury", "las-vegas"],
+    "capabilities": ["market-trends", "pricing-analysis", "neighborhood-insights"],
+    "required_tools": ["read_file", "grep_search", "run_in_terminal"],
+    "preferred_profile": "balanced",
+    "risk_level": "low"
+  },
+  {
+    "id": "listing-optimizer",
+    "role": "Listing Optimizer Agent",
+    "description": "Optimizes property listings with AI-generated descriptions, SEO keywords, and compelling narratives for maximum appeal.",
+    "tags": ["real-estate", "listings", "seo", "content"],
+    "capabilities": ["description-generation", "seo-optimization", "narrative-creation"],
+    "required_tools": ["read_file", "create_file", "run_in_terminal"],
+    "preferred_profile": "balanced",
+    "risk_level": "low"
+  },
+  {
+    "id": "client-matcher",
+    "role": "Client Matching Agent",
+    "description": "Matches luxury real estate clients with ideal properties based on preferences, budget, and lifestyle requirements.",
+    "tags": ["real-estate", "client-matching", "personalization"],
+    "capabilities": ["preference-analysis", "property-matching", "recommendation-engine"],
+    "required_tools": ["read_file", "grep_search", "semantic_search"],
+    "preferred_profile": "balanced",
+    "risk_level": "low"
+  },
+  {
+    "id": "compliance-checker",
+    "role": "Compliance Checker Agent",
+    "description": "Ensures all listings and communications comply with GLVAR standards and fair housing laws.",
+    "tags": ["real-estate", "compliance", "legal", "fair-housing"],
+    "capabilities": ["regulation-checking", "fair-housing-compliance", "disclosure-verification"],
+    "required_tools": ["read_file", "grep_search"],
+    "preferred_profile": "safe",
+    "risk_level": "low"
+  },
+  {
+    "id": "virtual-assistant",
+    "role": "Virtual Assistant Agent",
+    "description": "Handles client inquiries, schedules showings, and provides 24/7 support for luxury real estate transactions.",
+    "tags": ["real-estate", "customer-service", "automation"],
+    "capabilities": ["inquiry-handling", "scheduling", "communication"],
+    "required_tools": ["read_file", "run_in_terminal"],
+    "preferred_profile": "balanced",
+    "risk_level": "medium"
+  }
+]

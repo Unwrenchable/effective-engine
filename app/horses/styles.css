@@ -35,6 +35,14 @@ body {
 
 img { max-width: 100%; display: block; }
 
+.inline-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: inline-block;
+  vertical-align: -0.14em;
+  margin-right: 0.32rem;
+}
+
 p a { color: var(--accent); }
 
 /* ─── Skip nav ───────────────────────────────────────────────────────────── */

@@ -53,7 +53,7 @@
     <!-- Canonical + theme -->
     <link rel="canonical" href="https://www.donnasellslv.com/" />
     <meta name="theme-color" content="#090b10" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>" />
+    <link rel="icon" type="image/svg+xml" href="/icons/house-line.svg" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -199,7 +199,7 @@
           <li><a href="#about">About</a></li>
           <li><a href="#faq">FAQ</a></li>
           <li><a class="nav-cta" href="#contact">Contact</a></li>
-          <li><a class="nav-horses" href="/horses/">🐎 Horse Properties</a></li>
+          <li><a class="nav-horses" href="/horses/"><img class="inline-icon" src="/icons/horse-line.svg" alt="" aria-hidden="true" /> Horse Properties</a></li>
         </ul>
       </div>
     </nav>
@@ -219,7 +219,7 @@
           <a class="cta cta-secondary" href="#listings">Browse Featured Listings</a>
         </div>
         <p class="hero-note">
-          <a href="/horses/">🐎 Also serving Henderson's equestrian community</a>
+          <a href="/horses/"><img class="inline-icon" src="/icons/horse-line.svg" alt="" aria-hidden="true" /> Also serving Henderson's equestrian community</a>
         </p>
       </div>
     </header>
@@ -736,7 +736,7 @@
           <a href="#about">About</a>
           <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
-          <a href="/horses/">🐎 Horse Properties</a>
+          <a href="/horses/"><img class="inline-icon" src="/icons/horse-line.svg" alt="" aria-hidden="true" /> Horse Properties</a>
         </nav>
         <nav aria-label="Social media footer links" class="footer-social">
           <a href="https://www.instagram.com/donnasellslv/" rel="noopener noreferrer" target="_blank">Instagram</a>
@@ -810,22 +810,38 @@
           }
 
           const cards = data.listings.map(function (l) {
-            const photo = (l.photos && l.photos[0] && (l.photos[0].url || l.photos[0].Uri800 || l.photos[0].MediaURL))
-              || (l.Photos && l.Photos[0] && (l.Photos[0].Uri800 || l.Photos[0].MediaURL))
-              || '';
-            const address = [l.street_number || l.StreetNumber, l.street_name || l.StreetName, l.unit_number || l.UnitNumber].filter(Boolean).join(' ');
-            const cityLine = [l.city || l.City, l.state_or_province || l.StateOrProvince, l.postal_code || l.PostalCode].filter(Boolean).join(', ');
-            const listPrice = l.list_price || l.ListPrice;
-            const bedsTotal = l.bedrooms_total || l.BedroomsTotal;
-            const bathsTotal = l.bathrooms_total || l.BathroomsTotalInteger || l.BathroomsTotal;
-            const livingArea = l.living_area || l.LivingArea;
-            const price   = listPrice ? '$' + Number(listPrice).toLocaleString('en-US') : 'Price on request';
-            const beds    = bedsTotal ? bedsTotal + ' bd' : '';
-            const baths   = bathsTotal ? bathsTotal + ' ba' : '';
-            const sqft    = livingArea ? Number(livingArea).toLocaleString('en-US') + ' sqft' : '';
+            const photoList = l.Photos || l.photos || [];
+            const firstPhoto = photoList[0] || null;
+            const photo = firstPhoto
+              ? (firstPhoto.Uri800 || firstPhoto.uri800 || firstPhoto.url || firstPhoto.MediaURL || '')
+              : '';
+
+            const address = [
+              l.StreetNumber || l.street_number,
+              l.StreetName || l.street_name,
+              l.UnitNumber || l.unit_number,
+            ].filter(Boolean).join(' ');
+
+            const cityLine = [
+              l.City || l.city,
+              l.StateOrProvince || l.state_or_province,
+              l.PostalCode || l.postal_code,
+            ].filter(Boolean).join(', ');
+
+            const listPrice = l.ListPrice || l.list_price;
+            const bedsVal = l.BedroomsTotal || l.bedrooms_total;
+            const bathsVal = l.BathroomsTotalInteger || l.bathrooms_total;
+            const livingArea = l.LivingArea || l.living_area;
+
+            const price = listPrice ? '$' + Number(listPrice).toLocaleString('en-US') : 'Price on request';
+            const beds = bedsVal ? bedsVal + ' bd' : '';
+            const baths = bathsVal ? bathsVal + ' ba' : '';
+            const sqft = livingArea ? Number(livingArea).toLocaleString('en-US') + ' sqft' : '';
             const details = [beds, baths, sqft].filter(Boolean).join(' · ');
-            const mlsId   = l.listing_id || l.ListingId || '';
-            const attr    = (l._attribution && l._attribution.courtesyOf) || '';
+            const mlsId = l.ListingId || l.listing_id || l.id || '';
+            const attr = (l._attribution && l._attribution.courtesyOf)
+              || l.attribution_courtesy_of
+              || '';
             const imgTag  = photo
               ? `<img src="${escapeHtml(photo)}" alt="Photo of ${escapeHtml(address)}" loading="lazy" />`
               : '<div class="idx-no-photo" aria-hidden="true"></div>';

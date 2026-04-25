@@ -36,6 +36,14 @@ img {
   display: block;
 }
 
+.inline-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: inline-block;
+  vertical-align: -0.14em;
+  margin-right: 0.32rem;
+}
+
 /* ─── Skip navigation ────────────────────────────────────────────── */
 .skip-nav {
   position: absolute;

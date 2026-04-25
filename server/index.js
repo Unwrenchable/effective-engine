@@ -127,11 +127,12 @@ async function buildApp() {
   fastify.register(require('./routes/neighborhoods'),  { prefix: '/v2/neighborhoods' });
   fastify.register(require('./routes/alerts'),         { prefix: '/v2/alerts' });
   fastify.register(require('./routes/agents'),         { prefix: '/v2/agents' });
-  fastify.register(require('./routes/inquiries'),           { prefix: '/v2/inquiries' });
-  fastify.register(require('./routes/newsletter'),          { prefix: '/v2/newsletter' });
-  fastify.register(require('./routes/admin/sync'),          { prefix: '/v2/admin' });
-  fastify.register(require('./routes/admin/leads'),         { prefix: '/v2/admin' });
-  fastify.register(require('./routes/admin/newsletter'),    { prefix: '/v2/admin' });
+  fastify.register(require('./routes/inquiries'),      { prefix: '/v2/inquiries' });
+  fastify.register(require('./routes/newsletter'),     { prefix: '/v2/newsletter' });
+  fastify.register(require('./routes/admin/sync'),     { prefix: '/v2/admin' });
+  fastify.register(require('./routes/admin/leads'),    { prefix: '/v2/admin' });
+  fastify.register(require('./routes/admin/newsletter'), { prefix: '/v2/admin' });
+  fastify.register(require('./routes/agent-studio'),   { prefix: '/v2/agent-studio' });
 
   // ── Error handler ──────────────────────────────────────────────────────────
 
