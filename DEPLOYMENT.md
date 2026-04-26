@@ -109,7 +109,7 @@ Set these in Render dashboard → web service → **Environment**.
 
 1. Register at [sparkplatform.com/register](https://www.sparkplatform.com/register).
 2. Create an application in the Spark Developer Portal → record **Client ID** and **Client Secret**.
-3. Request GLVAR MLS access through your GLVAR membership portal at [lasvegasrealtor.com](https://www.lasvegasrealtor.com) → MLS Resources → Data & Technology → IDX/API access.
+3. Request GLVAR MLS access through your GLVAR membership portal at [lasvegasrealtor.com](https://www.lasvegasrealtor.com/) → MLS Resources → Data & Technology → IDX/API access.
 4. Approval typically takes 3–10 business days. Set `RESO_MOCK=true` in the interim to use seed data.
 
 ### Run database migrations
