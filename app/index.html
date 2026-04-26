@@ -1136,7 +1136,7 @@
     </script>
 
     <!-- AI Chat Widget -->
-    <div id="ai-chat-widget">
+    <div id="ai-chat-widget" style="display: none;">
       <button id="chat-toggle" aria-label="Open AI Assistant">🤖</button>
       <div id="chat-window" class="hidden">
         <div id="chat-header">
@@ -1267,6 +1267,8 @@
 
       chatClose.addEventListener('click', () => {
         chatWindow.classList.add('hidden');
+        // Hide the entire widget when closed
+        document.getElementById('ai-chat-widget').style.display = 'none';
       });
 
       chatSend.addEventListener('click', sendMessage);
@@ -1304,10 +1306,10 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
 
-      // Initialize with welcome message
+      // Show the chat widget after 5 seconds
       setTimeout(() => {
-        addMessage("Hi! I'm your AI Dream Home Curator. I can help you find the perfect property in Las Vegas Valley. What are you looking for?", 'ai');
-      }, 2000);
+        document.getElementById('ai-chat-widget').style.display = 'block';
+      }, 5000);
     </script>
 
     <!-- Future Vision -->
