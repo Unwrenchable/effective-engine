@@ -86,14 +86,30 @@ async function buildApp() {
 
   // Serve local media files (photos stored by the CDN_PROVIDER=local pipeline)
   // Available at /media/listings/<id>/photo.jpg
-  const mediaPath = path.resolve(config.cdn.localPath);
   const fs = require('fs');
-  if (!fs.existsSync(mediaPath)) fs.mkdirSync(mediaPath, { recursive: true });
-  await fastify.register(staticFiles, {
-    root:       mediaPath,
-    prefix:     config.cdn.localPublicUrl.replace(/\/?$/, '/'),
-    decorateReply: false,
-  });
+  if (config.cdn.provider === 'local') {
+    const mediaPath = path.resolve(config.cdn.localPath);
+    let mediaDirReady = fs.existsSync(mediaPath);
+    if (!mediaDirReady) {
+      try {
+        fs.mkdirSync(mediaPath, { recursive: true });
+        mediaDirReady = true;
+      } catch (err) {
+        fastify.log.warn(
+          { err, path: mediaPath },
+          'Could not create local media directory — local media uploads will be unavailable. ' +
+          'Set CDN_PROVIDER to a cloud provider or ensure MEDIA_LOCAL_PATH is writable.'
+        );
+      }
+    }
+    if (mediaDirReady) {
+      await fastify.register(staticFiles, {
+        root:       mediaPath,
+        prefix:     config.cdn.localPublicUrl.replace(/\/?$/, '/'),
+        decorateReply: false,
+      });
+    }
+  }
 
   // Serve the static frontend (app/ directory) at the root
   // When self-hosting without Vercel, the Fastify server delivers everything.
