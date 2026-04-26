@@ -1,0 +1,141 @@
+# Render Blueprint — effective-engine (DonnaSellsLV platform server)
+# https://render.com/docs/blueprint-spec
+#
+# Usage:
+#   1. Push this file to the repository root.
+#   2. Go to https://dashboard.render.com/blueprints → "New Blueprint Instance".
+#   3. Connect the repository and select this file.
+#   4. Fill in the sync: false variables (RESO_CLIENT_ID, RESO_CLIENT_SECRET,
+#      OPENAI_API_KEY, SMTP_*, ADMIN_EMAIL, TURNSTILE_*) in the Render dashboard
+#      after the Blueprint creates the services.
+#   5. Note the web service URL (e.g. https://donnasellslv-server.onrender.com)
+#      and paste it into vercel.json as PLATFORM_SERVER_URL before deploying Vercel.
+
+services:
+  # ── Fastify platform API ────────────────────────────────────────────────────
+  - type: web
+    name: donnasellslv-server
+    runtime: node
+    region: oregon         # choose: oregon | frankfurt | singapore | ohio | virginia
+    plan: starter          # starter ($7/mo) — upgrade to standard for production traffic
+
+    buildCommand: npm install --production
+    startCommand: node server/index.js
+
+    # Render injects $PORT automatically; the server reads it via config.js
+    # No need to set PORT manually — Render sets it to 10000 by default.
+
+    healthCheckPath: /health
+    autoDeploy: true
+
+    # Local photo storage (CDN_PROVIDER=local)
+    # Swap to CDN_PROVIDER=r2 / s3 / minio + delete this disk block
+    # when you have a cloud CDN configured.
+    disk:
+      name: media-storage
+      mountPath: /var/data/media
+      sizeGB: 20
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Render injects DATABASE_URL automatically from the linked database below.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: donnasellslv-db
+          property: connectionString
+
+      # Fastify needs DB_SSL=true for Render managed PostgreSQL
+      - key: DB_SSL
+        value: "true"
+
+      - key: HOST
+        value: "0.0.0.0"
+
+      # Update to your real domain once DNS is pointed at Vercel
+      - key: SITE_ORIGIN
+        value: https://www.donnasellslv.com
+
+      # JWT — Render generates a secure random value on first deploy
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: "8h"
+      - key: REFRESH_TOKEN_EXPIRES_IN
+        value: "30d"
+
+      # RESO / Spark API (MLS live feed)
+      # Set RESO_MOCK=false once you have GLVAR credentials
+      - key: RESO_MOCK
+        value: "false"
+      - key: RESO_BASE_URL
+        value: https://replication.sparkapi.com/Reso/OData
+      - key: RESO_TOKEN_URL
+        value: https://sparkplatform.com/openid/oauth2/token
+      - key: RESO_CLIENT_ID
+        sync: false         # fill in Render dashboard after deploy
+      - key: RESO_CLIENT_SECRET
+        sync: false         # fill in Render dashboard after deploy
+
+      # AI provider — set to openai (Ollama cannot run on Render)
+      - key: AI_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false         # fill in Render dashboard after deploy
+      - key: OPENAI_EMBEDDING_MODEL
+        value: text-embedding-3-small
+      - key: OPENAI_CHAT_MODEL
+        value: gpt-4o-mini
+
+      # Media storage — local disk (mounted above)
+      - key: CDN_PROVIDER
+        value: local
+      - key: MEDIA_LOCAL_PATH
+        value: /var/data/media
+      - key: MEDIA_PUBLIC_URL
+        value: /media
+
+      # MLS sync schedule
+      - key: SYNC_INTERVAL_MINUTES
+        value: "15"
+      - key: SYNC_FULL_HOUR
+        value: "3"
+      - key: SYNC_BATCH_SIZE
+        value: "200"
+
+      # Email / SMTP
+      - key: SMTP_HOST
+        sync: false         # fill in Render dashboard after deploy
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        value: alerts@donnasellslv.com
+
+      # Admin account (created on first run)
+      - key: ADMIN_EMAIL
+        sync: false         # fill in Render dashboard after deploy
+      - key: ADMIN_INITIAL_PASSWORD
+        generateValue: true # change immediately after first login
+
+      # Cloudflare Turnstile CAPTCHA (optional — leave blank to disable)
+      - key: TURNSTILE_SITE_KEY
+        sync: false
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+
+      # Redis (optional — disabled by default; pg-boss uses PostgreSQL)
+      - key: REDIS_ENABLED
+        value: "false"
+
+# ── PostgreSQL database ──────────────────────────────────────────────────────
+databases:
+  - name: donnasellslv-db
+    databaseName: donnasellslv
+    region: oregon           # must match the web service region
+    plan: starter            # starter ($7/mo) — upgrade to standard for production
+    postgresMajorVersion: 15 # required for pgvector and PostGIS

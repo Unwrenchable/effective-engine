@@ -1,217 +1,300 @@
-# Deployment Guide (Production)
+# Deployment Guide — Vercel + Render
 
-This project has **two deployable components**:
+This guide covers the full-stack production deployment of the DonnaSellsLV platform.
 
-1. **Vercel** — static site (`app/`) + IDX proxy serverless functions (`api/idx/`)
-2. **Platform server** — Fastify API (`server/`) + PostgreSQL DB — deploy to Railway, Render, or a VPS
+## Architecture overview
+
+```
+Browser
+  │
+  ├─▶ Vercel CDN ────────────── app/          (static HTML/CSS)
+  │                              /api/idx/*   (proxied → Render)
+  │                              /v2/*        (proxied → Render)
+  │
+  └─▶ Render Web Service ─────── /health
+                                  /api/idx/*  (IDX gateway)
+                                  /v2/*       (platform API)
+                                  /media/*    (listing photos)
+                                  │
+                                  └─▶ Render PostgreSQL (PostGIS + pgvector)
+```
+
+**Deploy order:** Render first → copy the service URL → update `vercel.json` → deploy Vercel.
 
 ---
 
-## Part 1: Vercel (frontend + IDX proxy)
-
-### Pre-deployment checklist
-
-1. Configure IDX gateway environment variables in Vercel (see §2).
-2. Replace the contact form endpoint: `action="https://formspree.io/f/YOUR_FORM_ID"`
-3. Confirm canonical + social URL values.
-4. Confirm social profile links and `twitter:site` handle.
-5. Replace placeholder phone values in JSON-LD and JS obfuscated phone block.
-6. Verify `app/robots.txt` points to your live sitemap URL.
-7. In `vercel.json`, replace `PLATFORM_SERVER_URL` with your actual Railway/Render URL once deployed.
-
-### IDX gateway setup
-
-#### Obtain MLS/IDX API credentials
-
-1. Log in to your **Spark API** (Bridge Interactive) account at [sparkapi.com](https://sparkapi.com).
-2. Go to **API Access** → **Applications** → **New Application**.
-3. Record your **Client ID** and **Client Secret**.
-4. Confirm your account has the **IDX** permission tier enabled.
-
-#### Set Vercel environment variables
-
-In Vercel project → **Settings** → **Environment Variables**:
-
-| Name | Value |
-|------|-------|
-| `IDX_BASE_URL` | `https://api.sparkapi.com` |
-| `IDX_CLIENT_ID` | Your Spark API client ID |
-| `IDX_CLIENT_SECRET` | Your Spark API client secret |
-| `SITE_ORIGIN` | `https://www.donnasellslv.com` |
-
-When you obtain a RESO direct-feed license from GLVAR, also add:
-
-| Name | Value |
-|------|-------|
-| `RESO_BASE_URL` | `https://replication.sparkapi.com/Reso/OData` |
-| `RESO_CLIENT_ID` | Your RESO client ID |
-| `RESO_CLIENT_SECRET` | Your RESO client secret |
-
-### Verify the connection
-
-```
-GET https://www.donnasellslv.com/api/idx/verify
-```
-
-Expected response: `{ "connected": true, "accountId": "...", "permissions": [...] }`
-
-### Validate before release
-
-```bash
-python -c "from html.parser import HTMLParser; HTMLParser().feed(open('app/index.html', encoding='utf-8').read()); print('HTML parse OK')"
-```
-
-### Deploy to Vercel
-
-1. Import the Git repository at [vercel.com/new](https://vercel.com/new)
-2. Leave all build settings at defaults — `vercel.json` handles them
-3. Add environment variables before first deploy
-4. Click **Deploy**
-5. Add custom domain (`donnasellslv.com`) in Project → Settings → Domains
-
----
-
-## Part 2: Platform server (Railway / Render)
+## Part 1: Render (backend)
 
 ### Requirements
 
 - Node.js 20+
-- PostgreSQL 15+ with **PostGIS** and **pgvector** extensions
-- (Optional) Redis — not required; pg-boss uses PostgreSQL for job queues
+- PostgreSQL 15+ with **PostGIS** and **pgvector** extensions (both handled automatically by the migrations)
 
-### Recommended: Railway
+### Option A — Blueprint (recommended)
 
-Railway provides PostgreSQL with PostGIS pre-installed. pgvector can be enabled as a plugin.
+`render.yaml` in the repository root defines the entire backend as infrastructure-as-code: one Fastify web service, one PostgreSQL 15 database, and a persistent disk for listing photos.
 
-1. Create a new Railway project
-2. Add a **PostgreSQL** service (click + → Database → PostgreSQL)
-3. Enable the `pgvector` plugin in the PostgreSQL service settings
-4. Add a new **Service** and connect it to this GitHub repository
-5. Set the start command to `node server/index.js`
-6. Add environment variables (see below)
-7. Railway auto-assigns a `DATABASE_URL` — link it to the server service
+1. Go to [dashboard.render.com/blueprints](https://dashboard.render.com/blueprints) → **New Blueprint Instance**.
+2. Connect the GitHub repository and select `render.yaml`.
+3. Render will create:
+   - **donnasellslv-server** — Fastify web service
+   - **donnasellslv-db** — PostgreSQL 15 database
+4. After creation, open the web service → **Environment** and fill in the variables marked `sync: false` (see table below).
+5. Click **Manual Deploy** → **Deploy latest commit** to apply the environment changes.
+
+### Option B — Manual setup
+
+1. **Create a PostgreSQL 15 database**
+   - Render dashboard → **New** → **PostgreSQL**
+   - Name: `donnasellslv-db`, Region: Oregon, Plan: Starter, Version: 15
+   - Copy the **Internal Database URL** — you will use it as `DATABASE_URL`.
+
+2. **Create the web service**
+   - Render dashboard → **New** → **Web Service**
+   - Connect the GitHub repository
+   - Runtime: **Node**, Region: Oregon (match the database region)
+   - Build Command: `npm install --production`
+   - Start Command: `node server/index.js`
+   - Health Check Path: `/health`
+   - Plan: Starter (upgrade to Standard for production traffic)
+
+3. **Add a persistent disk** (for `CDN_PROVIDER=local` photo storage)
+   - Web service → **Disks** → **Add Disk**
+   - Mount Path: `/var/data/media`, Size: 20 GB
+   - Skip this step if you configure Cloudflare R2, AWS S3, or MinIO instead.
+
+4. Set all environment variables (see table below).
 
 ### Environment variables (platform server)
 
-Copy `.env.example` and fill in all values. Minimum required:
+Set these in Render dashboard → web service → **Environment**.
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Random 64+ char secret |
-| `RESO_BASE_URL` | RESO endpoint (or use `IDX_*` Spark credentials) |
-| `OPENAI_API_KEY` | For AI features |
-| `SITE_ORIGIN` | Production domain for CORS |
+| Variable | Required | Example / Notes |
+|----------|----------|-----------------|
+| `DATABASE_URL` | ✅ | Auto-linked by Blueprint; or paste Internal DB URL |
+| `DB_SSL` | ✅ | `true` — required for Render managed PostgreSQL |
+| `HOST` | ✅ | `0.0.0.0` |
+| `SITE_ORIGIN` | ✅ | `https://www.donnasellslv.com` |
+| `JWT_SECRET` | ✅ | 64+ random chars — auto-generated by Blueprint |
+| `JWT_EXPIRES_IN` | | `8h` (default) |
+| `REFRESH_TOKEN_EXPIRES_IN` | | `30d` (default) |
+| `RESO_MOCK` | ✅ | `false` in production; `true` uses seed data |
+| `RESO_BASE_URL` | | `https://replication.sparkapi.com/Reso/OData` |
+| `RESO_TOKEN_URL` | | `https://sparkplatform.com/openid/oauth2/token` |
+| `RESO_CLIENT_ID` | ✅ (live) | Your Spark Platform client ID |
+| `RESO_CLIENT_SECRET` | ✅ (live) | Your Spark Platform client secret |
+| `AI_PROVIDER` | ✅ | `openai` on Render (Ollama requires a VPS) |
+| `OPENAI_API_KEY` | ✅ | Your OpenAI API key |
+| `OPENAI_EMBEDDING_MODEL` | | `text-embedding-3-small` (default) |
+| `OPENAI_CHAT_MODEL` | | `gpt-4o-mini` (default) |
+| `CDN_PROVIDER` | ✅ | `local` (disk) · `r2` · `s3` · `minio` |
+| `MEDIA_LOCAL_PATH` | | `/var/data/media` (matches disk mount path) |
+| `MEDIA_PUBLIC_URL` | | `/media` |
+| `SMTP_HOST` | ✅ | Your SMTP server hostname |
+| `SMTP_PORT` | | `587` (default) |
+| `SMTP_USER` | | SMTP auth username |
+| `SMTP_PASS` | | SMTP auth password |
+| `EMAIL_FROM` | | `alerts@donnasellslv.com` |
+| `ADMIN_EMAIL` | ✅ | Donna's email for lead notifications |
+| `ADMIN_INITIAL_PASSWORD` | ✅ | Temporary — change immediately after first login |
+| `TURNSTILE_SITE_KEY` | | Cloudflare Turnstile site key (optional) |
+| `TURNSTILE_SECRET_KEY` | | Cloudflare Turnstile secret key (optional) |
+| `REDIS_ENABLED` | | `false` (default) — pg-boss handles queues via PostgreSQL |
 
-### Run migrations
+> **Cloud media storage (recommended for production)**
+> Replace `CDN_PROVIDER=local` + disk with Cloudflare R2 or AWS S3.
+> See `.env.example` for `R2_*` / `AWS_*` / `MINIO_*` variables.
+
+### MLS / RESO credentials
+
+1. Register at [sparkplatform.com/register](https://www.sparkplatform.com/register).
+2. Create an application in the Spark Developer Portal → record **Client ID** and **Client Secret**.
+3. Request GLVAR MLS access through your GLVAR membership portal at [lasvegasrealtor.com](https://www.lasvegasrealtor.com) → MLS Resources → Data & Technology → IDX/API access.
+4. Approval typically takes 3–10 business days. Set `RESO_MOCK=true` in the interim to use seed data.
+
+### Run database migrations
+
+After the service is live, open the Render web service → **Shell** tab and run:
 
 ```bash
 npm run migrate
 ```
 
+This applies all SQL migrations in `db/migrations/` in order, including:
+- `CREATE EXTENSION IF NOT EXISTS postgis;`
+- `CREATE EXTENSION IF NOT EXISTS vector;`
+- All schema tables (listings, auth, alerts, market snapshots, etc.)
+
+Check status at any time:
+
+```bash
+node db/migrate.js --status
+```
+
 ### Initial MLS sync
 
 ```bash
-npm run sync:now        # delta sync
-npm run sync:now -- --full   # full sync (first time — may take minutes)
+npm run sync:now               # delta sync (uses RESO_MOCK seed data if RESO_MOCK=true)
+npm run sync:now -- --full     # full sync (first time with live feed — may take several minutes)
 ```
 
-### Start server
+The scheduler starts automatically with the server: 15-minute delta syncs and a full sync daily at 3 AM UTC.
 
-```bash
-npm start               # production
-npm run dev             # development with auto-restart
+### Verify the backend
+
+```
+GET https://donnasellslv-server.onrender.com/health
+→ { "status": "ok", "ts": "..." }
+
+GET https://donnasellslv-server.onrender.com/v2/listings
+→ { "listings": [...], "total": N }
 ```
 
-The scheduler starts automatically with the server (15-min delta sync, daily 3 AM full sync).
+---
 
-### Connect Vercel to platform server
+## Part 2: Vercel (frontend)
 
-In `vercel.json`, replace `PLATFORM_SERVER_URL` in the rewrites section with your Railway/Render URL:
+### Update vercel.json
+
+> **Important:** Vercel does not support environment variable substitution in `vercel.json` rewrite destinations. You must replace `PLATFORM_SERVER_URL` with the actual Render URL before deploying.
+
+Open `vercel.json` and replace both occurrences of `PLATFORM_SERVER_URL` with your Render service URL:
 
 ```json
 {
-  "source": "/api/v2/:path*",
-  "destination": "https://your-app.railway.app/v2/:path*"
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://donnasellslv-server.onrender.com/api/:path*"
+    },
+    {
+      "source": "/v2/:path*",
+      "destination": "https://donnasellslv-server.onrender.com/v2/:path*"
+    }
+  ]
 }
 ```
 
-Redeploy Vercel after updating `vercel.json`.
+Commit and push this change before deploying to Vercel.
+
+### Pre-deployment checklist
+
+- [ ] `vercel.json` — `PLATFORM_SERVER_URL` replaced with actual Render URL
+- [ ] `app/index.html` — contact form `action` updated: `https://formspree.io/f/YOUR_FORM_ID`
+- [ ] `app/index.html` — canonical URL, social handles, `twitter:site` confirmed
+- [ ] `app/index.html` — placeholder phone replaced in JSON-LD and JS obfuscation block
+- [ ] `app/horses/index.html` — contact form `action` updated: `https://formspree.io/f/YOUR_HORSE_FORM_ID`
+- [ ] `app/horses/index.html` — canonical URL and social handles confirmed
+- [ ] `app/horses/index.html` — placeholder phone replaced in JS obfuscation block
+- [ ] `app/robots.txt` — sitemap URL points to `https://www.donnasellslv.com/sitemap.xml`
+
+### Deploy to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new) → **Import Git Repository**
+2. Select the repository — leave all build settings at defaults (`vercel.json` handles them)
+3. Click **Deploy**
+4. Add the custom domain (`donnasellslv.com`) in **Project → Settings → Domains**
+
+Vercel reads `vercel.json` automatically:
+- Serves `app/` as the output directory
+- Proxies `/api/*` and `/v2/*` to the Render service
+- Adds security headers (`X-Content-Type-Options`, `X-Frame-Options`, etc.)
+- Enables clean URLs and no trailing slashes
+
+### Validate HTML before release
+
+```bash
+python -c "from html.parser import HTMLParser; HTMLParser().feed(open('app/index.html', encoding='utf-8').read()); print('HTML parse OK')"
+python -c "from html.parser import HTMLParser; HTMLParser().feed(open('app/horses/index.html', encoding='utf-8').read()); print('HTML parse OK')"
+```
+
+### Verify the IDX gateway
+
+```
+GET https://www.donnasellslv.com/api/idx/verify
+→ { "connected": true, ... }
+```
 
 ---
 
 ## Part 3: Nevada Horse Properties site (`app/horses/`)
 
-The horse property site is a static subdirectory of `app/` and deploys automatically with Vercel alongside the main site — **no extra deployment steps needed**.
-
-### Pre-deployment checklist
-
-1. Update the horse site contact form `action` attribute in `app/horses/index.html`:
-   - Replace `https://formspree.io/f/YOUR_HORSE_FORM_ID` with a separate Formspree (or equivalent) form endpoint. Using a dedicated form ID lets you route horse property inquiries differently from general luxury inquiries.
-2. Confirm social profile URLs in `app/horses/index.html` match current handles.
-3. Confirm canonical URL: `<link rel="canonical" href="https://www.donnasellslv.com/horses/" />`
-4. Replace placeholder phone parts in the JS obfuscation block near the bottom of `app/horses/index.html` with the real number.
-
-### URL structure
+The horse property site is a static subdirectory of `app/` and deploys automatically with Vercel — **no extra steps**.
 
 | URL | File |
 |-----|------|
 | `https://www.donnasellslv.com/` | `app/index.html` |
 | `https://www.donnasellslv.com/horses/` | `app/horses/index.html` |
-| `https://www.donnasellslv.com/horses/styles.css` | `app/horses/styles.css` |
 
-Vercel's `cleanUrls: true` setting in `vercel.json` serves `app/horses/index.html` at `/horses/` without the `.html` extension.
+`cleanUrls: true` in `vercel.json` serves `app/horses/index.html` at `/horses/` without the `.html` extension.
 
-### IDX search on the horse site
-
-The horse property search form posts to the same `/api/idx/search` endpoint as the main site. Horse-specific filters (barn, arena, round pen, pasture) are passed as additional keyword terms in the `location` parameter so the Spark/RESO gateway can include them in the MLS remarks/keyword filter.
-
-When a horse-specific feature is selected:
-- `barn` → appends `"barn"` to the location search term
-- `arena` → appends `"arena"`
-- `round-pen` → appends `"round pen"`
-- `pasture` → appends `"pasture"`
-- `horse-property` → appends `"horse property"` (matches the GLVAR MLS horse property flag)
-
-For more precise filtering, the platform server's `/v2/listings` endpoint supports the `q` natural-language parameter (semantic search), which can be used to query: *"horse property with 6-stall barn and arena in Henderson"*.
-
-### SEO notes
-
-The horse site has dedicated:
-- Canonical URL (`/horses/`)
-- Open Graph tags with horse property hero image
-- Twitter Card
-- `RealEstateAgent` + `LocalBusiness` JSON-LD with Henderson address and equestrian area-served data
-- Separate `FAQPage` JSON-LD with 6 horse-property-specific Q&As
-- Meta keywords targeting horse property, A-1 zoning, equestrian estate, and Henderson/Clark County terms
-- `geo.*` meta tags pointing to Henderson coordinates
+The horse property search form posts to `/api/idx/search` (proxied to Render). Horse-specific filters (barn, arena, round pen, pasture, horse-property) are appended as keyword terms in the `location` parameter so the Spark/RESO gateway can match them in MLS remarks.
 
 Submit `https://www.donnasellslv.com/horses/` separately in Google Search Console after launch.
 
-### Post-deployment verification
+---
 
-1. Verify `https://www.donnasellslv.com/horses/` loads with the earthy horse property design
-2. Verify navigation link from main site (`donnasellslv.com/`) to horse site works (if added)
-3. Verify horse property search form hits `/api/idx/search` and renders results
-4. Verify contact form submits to the correct Formspree endpoint
-5. Verify `/horses/` appears in Google Search Console after sitemap submission
+## Post-deployment verification checklist
 
+- [ ] `https://www.donnasellslv.com/` — main site loads correctly
+- [ ] `https://www.donnasellslv.com/horses/` — horse site loads with earthy design
+- [ ] `https://www.donnasellslv.com/api/idx/verify` — returns `{ "connected": true }`
+- [ ] `https://donnasellslv-server.onrender.com/health` — returns `{ "status": "ok" }`
+- [ ] `GET /v2/listings` — returns listing results (via Vercel proxy or direct)
+- [ ] `GET /v2/admin/sync/status` — returns listing counts (admin JWT required)
+- [ ] Contact form submits successfully
+- [ ] Horse property contact form submits successfully
+- [ ] Lighthouse — no critical accessibility or SEO issues
+- [ ] Monitor form submissions and IDX search results for 24 hours
 
-1. Verify `https://www.donnasellslv.com/` loads correctly
-2. Verify `https://www.donnasellslv.com/api/idx/verify` returns `connected: true`
-3. Verify `https://your-platform-server.railway.app/health` returns `{"status":"ok"}`
-4. Verify `GET /v2/listings` returns listing results
-5. Verify `GET /v2/admin/sync/status` returns listing counts (admin JWT required)
-6. Run Lighthouse and confirm no critical accessibility/SEO issues
-7. Monitor form submissions and IDX search results for 24 hours
+---
 
 ## Rollback
 
-If an issue is found with Vercel:
-1. Re-deploy the previous commit in Vercel dashboard
-2. Re-verify IDX gateway and forms
+### Vercel
 
-If an issue is found with the platform server:
-1. Re-deploy the previous Railway/Render deployment
-2. Re-verify `/health` and `/v2/listings`
+1. Vercel dashboard → project → **Deployments** → find the last known-good deploy → **...** → **Promote to Production**
+2. Re-verify IDX gateway: `GET /api/idx/verify`
+
+### Render
+
+1. Render dashboard → web service → **Events** → find the last known-good deploy → **Rollback to this deploy**
+2. Re-verify: `GET /health` and `GET /v2/listings`
+3. If a migration caused the issue: connect via Shell, inspect `schema_migrations` table, and restore from the Render database backup (dashboard → database → **Backups**).
+
+---
+
+## Local development
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Set up environment
+cp .env.example .env
+# Edit .env — set DATABASE_URL and JWT_SECRET at minimum
+# Leave RESO_MOCK=true to use seed data (no live MLS license needed)
+
+# 3. Run database migrations
+npm run migrate
+
+# 4. Run initial sync (uses seed data with RESO_MOCK=true)
+npm run sync:now
+
+# 5. Start the server
+npm run dev        # auto-restart on file changes
+```
+
+The server listens on port 3001 by default. It serves `app/` at `/`, media at `/media/`, IDX routes at `/api/idx/`, and the platform API at `/v2/`.
+
+For AI features locally, install Ollama:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull nomic-embed-text   # 768-dim embeddings
+ollama pull llama3.2           # chat / descriptions
+ollama pull llava              # photo tagging (vision)
+```
+
+Set `AI_PROVIDER=ollama` in `.env` (the default). No API key required.
 
