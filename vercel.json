@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source":      "/api/:path*",
-      "destination": "PLATFORM_SERVER_URL/api/:path*"
+      "destination": "https://donnasellslv-db.onrender.com/api/:path*"
     },
     {
       "source":      "/v2/:path*",
-      "destination": "PLATFORM_SERVER_URL/v2/:path*"
+      "destination": "https://donnasellslv-db.onrender.com/v2/:path*"
     }
   ],
   "headers": [
