@@ -16,7 +16,9 @@ const workflowsPath = path.join(__dirname, '../../real_estate_workflows.json');
 
 module.exports = async function agentStudioRoutes(fastify) {
 
-  fastify.get('/agents', async (req, reply) => {
+  fastify.get('/agents', {
+    onRequest: [fastify.authenticate],
+  }, async (req, reply) => {
     try {
       const data = await fs.readFile(agentsPath, 'utf8');
       const agents = JSON.parse(data);
@@ -26,7 +28,9 @@ module.exports = async function agentStudioRoutes(fastify) {
     }
   });
 
-  fastify.get('/workflows', async (req, reply) => {
+  fastify.get('/workflows', {
+    onRequest: [fastify.authenticate],
+  }, async (req, reply) => {
     try {
       const data = await fs.readFile(workflowsPath, 'utf8');
       const workflows = JSON.parse(data);
@@ -37,6 +41,7 @@ module.exports = async function agentStudioRoutes(fastify) {
   });
 
   fastify.post('/run', {
+    onRequest: [fastify.authenticate],
     schema: {
       body: {
         type: 'object',
@@ -68,6 +73,47 @@ module.exports = async function agentStudioRoutes(fastify) {
           result = `Generated description: ${description}`;
         } catch (error) {
           result = 'AI service unavailable, using simulation';
+        }
+      } else if (id === 'property-valuator') {
+        const avm = require('../services/avm');
+        try {
+          const listing = input || {}; // Assume input has listing data
+          const valuation = await avm.estimate(listing);
+          result = `Property valuation: $${valuation.estimate} with ${valuation.confidence} confidence. Comps: ${valuation.comps.length}`;
+        } catch (error) {
+          result = 'AVM service error, using simulation';
+        }
+      } else if (id === 'market-analyst') {
+        const market = require('../services/market');
+        try {
+          const analysis = await market.analyzeTrends(input?.city || 'Las Vegas');
+          result = `Market analysis: ${analysis.summary || 'Trends analyzed'}`;
+        } catch (error) {
+          result = 'Market service unavailable, using simulation';
+        }
+      } else if (id === 'client-matcher') {
+        // Simulate matching
+        result = `Matched properties for client preferences: ${JSON.stringify(input || {})}`;
+      } else if (id === 'compliance-checker') {
+        // Simulate compliance check
+        result = 'Listing complies with GLVAR and fair housing laws.';
+      } else if (id === 'virtual-assistant') {
+        // Simulate assistant
+        result = 'Handled inquiry and scheduled showing.';
+      } else if (id === 'virtual-tour-guide') {
+        // Simulate tour creation
+        result = 'Virtual tour created and integrated.';
+      } else if (id === 'negotiation-assistant') {
+        // Simulate negotiation
+        result = 'Offer analyzed, counter-offer suggested.';
+      } else if (id === 'data-sync-agent') {
+        // Call sync
+        const sync = require('../sync/ingest');
+        try {
+          await sync.run();
+          result = 'Data synchronized with MLS/IDX feeds.';
+        } catch (error) {
+          result = 'Sync failed, using simulation';
         }
       }
       return reply.send({

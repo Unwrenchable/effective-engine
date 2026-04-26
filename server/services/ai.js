@@ -344,6 +344,52 @@ Listing Office: ${listing.list_office_name || 'N/A'}`;
   return resp.choices[0].message.content.trim();
 }
 
+/**
+ * Generate a conversational response for the AI chat widget.
+ */
+async function generateChatResponse(message) {
+  const systemPrompt = `You are an AI Dream Home Curator for Donna Sells LV, a luxury real estate specialist in Las Vegas Valley.
+Your role is to silently help customers find their dream home by:
+- Asking thoughtful questions about their preferences (location, budget, style, features)
+- Providing personalized recommendations based on Las Vegas market knowledge
+- Suggesting next steps like scheduling showings or viewing listings
+- Maintaining a friendly, professional tone
+- Keeping responses concise but helpful
+
+Key areas: Summerlin, Henderson, Green Valley, Anthem, Southern Highlands, Centennial Hills, Aliante, Boulder City, etc.
+Luxury features: guard-gated communities, Strip views, golf courses, custom builds, etc.
+
+If the user mentions specific preferences, curate suggestions accordingly.`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: message },
+  ];
+
+  if (isOllama()) {
+    try {
+      const resp = await ollamaPost('/api/chat', {
+        model:  config.ai.ollamaChatModel,
+        stream: false,
+        messages,
+        options: { temperature: 0.7, num_predict: 200 },
+      });
+      return resp.message.content.trim();
+    } catch (err) {
+      console.warn('[ai] Ollama chat failed, trying OpenAI fallback:', err.message);
+    }
+  }
+
+  const openai = getOpenAI();
+  const resp = await openai.chat.completions.create({
+    model:       config.ai.openaiChatModel,
+    messages,
+    max_tokens:  200,
+    temperature: 0.7,
+  });
+  return resp.choices[0].message.content.trim();
+}
+
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
 /**
@@ -379,4 +425,5 @@ module.exports = {
   generateMarketNarrative,
   analyzePhoto,
   chatAnswer,
+  generateChatResponse,
 };

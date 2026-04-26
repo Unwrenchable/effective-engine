@@ -46,7 +46,45 @@
     "tags": ["real-estate", "customer-service", "automation"],
     "capabilities": ["inquiry-handling", "scheduling", "communication"],
     "required_tools": ["read_file", "run_in_terminal"],
+  },
+  {
+    "id": "property-valuator",
+    "role": "Property Valuation Agent",
+    "description": "Provides automated property valuations using AVM models, comparable sales data, and market trends for accurate pricing.",
+    "tags": ["real-estate", "valuation", "avm", "pricing"],
+    "capabilities": ["automated-valuation", "comparable-analysis", "market-adjustments"],
+    "required_tools": ["read_file", "run_in_terminal", "semantic_search"],
+    "preferred_profile": "balanced",
+    "risk_level": "low"
+  },
+  {
+    "id": "virtual-tour-guide",
+    "role": "Virtual Tour Guide Agent",
+    "description": "Creates immersive virtual tours and 3D walkthroughs for properties, enhancing online property viewing experiences.",
+    "tags": ["real-estate", "virtual-tours", "3d", "immersion"],
+    "capabilities": ["tour-creation", "3d-modeling", "interactive-experiences"],
+    "required_tools": ["create_file", "run_in_terminal"],
+    "preferred_profile": "creative",
+    "risk_level": "medium"
+  },
+  {
+    "id": "negotiation-assistant",
+    "role": "Negotiation Assistant Agent",
+    "description": "Assists with offer negotiations, counter-offers, and deal structuring to maximize client outcomes in transactions.",
+    "tags": ["real-estate", "negotiation", "deals", "strategy"],
+    "capabilities": ["offer-analysis", "counter-offer-suggestions", "deal-optimization"],
+    "required_tools": ["read_file", "run_in_terminal"],
     "preferred_profile": "balanced",
     "risk_level": "medium"
+  },
+  {
+    "id": "data-sync-agent",
+    "role": "Data Synchronization Agent",
+    "description": "Manages real-time synchronization with MLS/IDX feeds, ensuring up-to-date property listings and market data.",
+    "tags": ["real-estate", "data-sync", "mls", "idx"],
+    "capabilities": ["feed-integration", "data-validation", "real-time-updates"],
+    "required_tools": ["run_in_terminal", "read_file", "grep_search"],
+    "preferred_profile": "reliable",
+    "risk_level": "low"
   }
 ]

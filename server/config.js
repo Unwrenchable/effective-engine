@@ -139,6 +139,15 @@ const config = {
     secretKey: optional('TURNSTILE_SECRET_KEY'),
     siteKey:   optional('TURNSTILE_SITE_KEY'),
   },
+
+  // Redis caching for performance
+  redis: {
+    enabled: optionalBool('REDIS_ENABLED', false),
+    host: optional('REDIS_HOST', 'localhost'),
+    port: optionalInt('REDIS_PORT', 6379),
+    password: optional('REDIS_PASSWORD'),
+    db: optionalInt('REDIS_DB', 0),
+  },
 };
 
 module.exports = config;

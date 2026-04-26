@@ -12,6 +12,7 @@
  */
 
 const { query } = require('../models/db');
+const cache = require('../cache');
 
 const MAX_COMPS = 10;
 
@@ -23,6 +24,12 @@ const MAX_COMPS = 10;
  * @returns {Promise<{estimate:number|null, confidence:'high'|'medium'|'low', comps:object[]}>}
  */
 async function estimate(listing) {
+  const cacheKey = `avm:${listing.listing_id || listing.address}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const {
     listing_id,
     city,
@@ -39,7 +46,7 @@ async function estimate(listing) {
   }
 
   // Find comparable sold listings in the last 6 months within 2 miles
-  const result = await query(
+  const queryResult = await query(
     `SELECT
        l.listing_id,
        l.list_price,
@@ -71,7 +78,7 @@ async function estimate(listing) {
     ]
   );
 
-  const comps = result.rows;
+  const comps = queryResult.rows;
   if (comps.length < 3) {
     return { estimate: null, confidence: 'low', comps };
   }
@@ -98,7 +105,7 @@ async function estimate(listing) {
 
   const confidence = comps.length >= 7 ? 'high' : comps.length >= 4 ? 'medium' : 'low';
 
-  return {
+  const result = {
     estimate,
     confidence,
     comps: comps.slice(0, 5).map((c) => ({
@@ -109,6 +116,11 @@ async function estimate(listing) {
       distance_miles: parseFloat(c.distance_miles.toFixed(2)),
     })),
   };
+
+  // Cache for 1 hour
+  await cache.set(cacheKey, result, 3600);
+
+  return result;
 }
 
 module.exports = { estimate };

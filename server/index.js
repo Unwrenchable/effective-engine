@@ -64,6 +64,10 @@ async function buildApp() {
 
   // ── Plugins ────────────────────────────────────────────────────────────────
 
+  // Initialize Redis cache
+  const cache = require('./cache');
+  cache.init();
+
   await fastify.register(cors, {
     origin:      config.server.origin,
     methods:     ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -133,6 +137,7 @@ async function buildApp() {
   fastify.register(require('./routes/admin/leads'),    { prefix: '/v2/admin' });
   fastify.register(require('./routes/admin/newsletter'), { prefix: '/v2/admin' });
   fastify.register(require('./routes/agent-studio'),   { prefix: '/v2/agent-studio' });
+  fastify.register(require('./routes/ai'),              { prefix: '/v2/ai' });
 
   // ── Error handler ──────────────────────────────────────────────────────────
 

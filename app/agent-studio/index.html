@@ -111,7 +111,7 @@
               <h3 class="agent-role">${agent.role}</h3>
               <p class="agent-description">${agent.description}</p>
               <div class="tags">${agent.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
-              ${agent.id === 'listing-optimizer' ? `
+              ${agent.id === 'listing-optimizer' || agent.id === 'property-valuator' ? `
                 <div class="input-form" id="form-${agent.id}">
                   <div class="input-field">
                     <label>Address:</label>
@@ -129,9 +129,27 @@
                     <label>Sqft:</label>
                     <input type="number" id="sqft-${agent.id}" placeholder="3500">
                   </div>
+                  ${agent.id === 'property-valuator' ? `
+                  <div class="input-field">
+                    <label>Latitude:</label>
+                    <input type="number" step="0.0001" id="latitude-${agent.id}" placeholder="36.1699">
+                  </div>
+                  <div class="input-field">
+                    <label>Longitude:</label>
+                    <input type="number" step="0.0001" id="longitude-${agent.id}" placeholder="-115.1398">
+                  </div>
+                  ` : `
                   <div class="input-field">
                     <label>Price:</label>
                     <input type="number" id="price-${agent.id}" placeholder="1500000">
+                  </div>
+                  `}
+                </div>
+              ` : agent.id === 'market-analyst' ? `
+                <div class="input-form" id="form-${agent.id}">
+                  <div class="input-field">
+                    <label>City:</label>
+                    <input type="text" id="city-${agent.id}" placeholder="Las Vegas">
                   </div>
                 </div>
               ` : ''}
@@ -170,14 +188,28 @@
         let input = {};
         if (form) {
           form.classList.add('show');
-          // For demo, collect inputs
-          input = {
-            address: document.getElementById(`address-${id}`)?.value || '',
-            beds: parseInt(document.getElementById(`beds-${id}`)?.value) || 0,
-            baths: parseInt(document.getElementById(`baths-${id}`)?.value) || 0,
-            sqft: parseInt(document.getElementById(`sqft-${id}`)?.value) || 0,
-            price: parseInt(document.getElementById(`price-${id}`)?.value) || 0
-          };
+          // Collect inputs based on agent
+          if (id === 'listing-optimizer' || id === 'property-valuator') {
+            input = {
+              address: document.getElementById(`address-${id}`)?.value || '',
+              beds: parseInt(document.getElementById(`beds-${id}`)?.value) || 0,
+              baths: parseInt(document.getElementById(`baths-${id}`)?.value) || 0,
+              sqft: parseInt(document.getElementById(`sqft-${id}`)?.value) || 0,
+              city: 'Las Vegas', // Assume for now
+              property_type: 'Residential'
+            };
+            if (id === 'property-valuator') {
+              input.latitude = parseFloat(document.getElementById(`latitude-${id}`)?.value) || 0;
+              input.longitude = parseFloat(document.getElementById(`longitude-${id}`)?.value) || 0;
+              input.listing_id = 'sample'; // Placeholder
+            } else {
+              input.price = parseInt(document.getElementById(`price-${id}`)?.value) || 0;
+            }
+          } else if (id === 'market-analyst') {
+            input = {
+              city: document.getElementById(`city-${id}`)?.value || 'Las Vegas'
+            };
+          }
         }
         try {
           const res = await fetch('/v2/agent-studio/run', {

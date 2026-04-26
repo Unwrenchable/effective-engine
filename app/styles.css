@@ -448,6 +448,53 @@ h2 {
   margin: 0 0 1rem;
 }
 
+.share-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.share-buttons button {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+}
+
+.share-buttons button:hover {
+  background: var(--line);
+  color: var(--text);
+}
+
+/* ─── AI Insights ───────────────────────────────────────────────────── */
+#ai-insights {
+  background: linear-gradient(135deg, var(--panel) 0%, var(--ink-dark) 100%);
+  border: 1px solid var(--accent);
+}
+
+.insight-item {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg);
+  border-radius: 8px;
+  border-left: 4px solid var(--accent);
+}
+
+.insight-item h3 {
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.insight-item p {
+  margin: 0;
+  color: var(--text);
+}
+
 .listing-cta {
   display: inline-block;
   margin-top: auto;

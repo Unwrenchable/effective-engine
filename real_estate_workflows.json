@@ -56,5 +56,81 @@
         "task": "Coordinate scheduling and communication between parties"
       }
     ]
+  },
+  {
+    "name": "Property Valuation",
+    "description": "Automated property valuation workflow using AVM and market data",
+    "steps": [
+      {
+        "agent_id": "property-valuator",
+        "task": "Perform automated valuation model analysis"
+      },
+      {
+        "agent_id": "market-analyst",
+        "task": "Validate valuation against current market trends and comparables"
+      },
+      {
+        "agent_id": "compliance-checker",
+        "task": "Ensure valuation disclosures meet regulatory requirements"
+      }
+    ]
+  },
+  {
+    "name": "Virtual Tour Creation",
+    "description": "Workflow for creating immersive virtual property tours",
+    "steps": [
+      {
+        "agent_id": "virtual-tour-guide",
+        "task": "Generate 3D virtual tour from property photos and floor plans"
+      },
+      {
+        "agent_id": "listing-optimizer",
+        "task": "Optimize tour narrative and highlight key features"
+      },
+      {
+        "agent_id": "virtual-assistant",
+        "task": "Integrate tour into listing platform and client communications"
+      }
+    ]
+  },
+  {
+    "name": "Offer Negotiation",
+    "description": "Strategic negotiation workflow for real estate offers",
+    "steps": [
+      {
+        "agent_id": "negotiation-assistant",
+        "task": "Analyze incoming offers and market positioning"
+      },
+      {
+        "agent_id": "market-analyst",
+        "task": "Provide real-time market data to inform negotiation strategy"
+      },
+      {
+        "agent_id": "compliance-checker",
+        "task": "Verify all negotiation communications comply with regulations"
+      },
+      {
+        "agent_id": "virtual-assistant",
+        "task": "Facilitate communication and document exchanges"
+      }
+    ]
+  },
+  {
+    "name": "Data Synchronization",
+    "description": "Workflow for maintaining real-time MLS/IDX data synchronization",
+    "steps": [
+      {
+        "agent_id": "data-sync-agent",
+        "task": "Connect to MLS/IDX feeds and validate data integrity"
+      },
+      {
+        "agent_id": "compliance-checker",
+        "task": "Ensure synchronized data meets fair housing and disclosure requirements"
+      },
+      {
+        "agent_id": "market-analyst",
+        "task": "Analyze new data for market trend updates"
+      }
+    ]
   }
 ]

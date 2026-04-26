@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics Dashboard | Donna Sells LV</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <header style="background: var(--ink-dark); padding: 1rem; text-align: center;">
+      <h1 style="color: var(--accent); font-family: var(--serif);">Analytics Dashboard</h1>
+      <p style="color: var(--muted);">Market Insights & Performance Metrics</p>
+    </header>
+
+    <main class="studio-container">
+      <section class="card">
+        <h2>Market Trends</h2>
+        <canvas id="marketChart"></canvas>
+      </section>
+
+      <section class="card">
+        <h2>Price Distribution</h2>
+        <canvas id="priceChart"></canvas>
+      </section>
+
+      <section class="card">
+        <h2>Agent Performance</h2>
+        <canvas id="agentChart"></canvas>
+      </section>
+    </main>
+
+    <script>
+      // Load market stats
+      fetch('/v2/market/stats')
+        .then(res => res.json())
+        .then(data => {
+          // Market chart
+          const ctx1 = document.getElementById('marketChart').getContext('2d');
+          new Chart(ctx1, {
+            type: 'line',
+            data: {
+              labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+              datasets: [{
+                label: 'Average Price',
+                data: [500000, 520000, 510000, 530000, 540000, 550000],
+                borderColor: 'var(--accent)',
+                tension: 0.1
+              }]
+            }
+          });
+
+          // Price distribution
+          const ctx2 = document.getElementById('priceChart').getContext('2d');
+          new Chart(ctx2, {
+            type: 'bar',
+            data: {
+              labels: ['$0-500K', '$500K-1M', '$1M-2M', '$2M-5M', '$5M+'],
+              datasets: [{
+                label: 'Listings',
+                data: [50, 30, 20, 10, 5],
+                backgroundColor: 'var(--accent)'
+              }]
+            }
+          });
+
+          // Agent performance (placeholder)
+          const ctx3 = document.getElementById('agentChart').getContext('2d');
+          new Chart(ctx3, {
+            type: 'doughnut',
+            data: {
+              labels: ['Sold', 'Pending', 'Active'],
+              datasets: [{
+                data: [15, 5, 20],
+                backgroundColor: ['#4CAF50', '#FF9800', '#2196F3']
+              }]
+            }
+          });
+        });
+    </script>
+  </body>
+</html>
