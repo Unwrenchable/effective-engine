@@ -229,5 +229,9 @@ Single VPS (Hetzner / Railway / Render / bare metal)
 
 ## Deployment
 
-See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for full production deployment steps for both Vercel (frontend + IDX proxy) and Railway/Render (platform server).
+See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for full production deployment steps.
+
+**Quick summary:**
+1. **Render** (backend) — deploy via `render.yaml` Blueprint or manual setup
+2. **Vercel** (frontend) — update `PLATFORM_SERVER_URL` in `vercel.json` with the Render URL, then deploy
 
