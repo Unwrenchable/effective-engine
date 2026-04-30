@@ -35,6 +35,10 @@ const path   = require('path');
 // In-process OAuth2 token cache
 let _tokenCache = null; // { access_token, expires_at }
 
+const RESO_HTTP_TIMEOUT_MS = 30_000;
+const RESO_HTTP_MAX_RETRIES = 2;
+const RESO_AUTH_MAX_RETRIES = 1;
+
 // ─── Mock mode ────────────────────────────────────────────────────────────────
 
 /**
@@ -87,28 +91,39 @@ async function getBearerToken() {
     client_secret: clientSecret,
   });
 
-  const res = await fetchWithTimeout(tokenUrl, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body:    body.toString(),
-  });
+  for (let attempt = 1; attempt <= RESO_AUTH_MAX_RETRIES + 1; attempt++) {
+    try {
+      const res = await fetchWithTimeout(tokenUrl, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body:    body.toString(),
+      }, RESO_HTTP_TIMEOUT_MS, `TOKEN attempt=${attempt}`);
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new ResoAuthError(`RESO token request failed (${res.status}): ${text.slice(0, 200)}`);
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new ResoAuthError(`RESO token request failed (${res.status}): ${text.slice(0, 200)}`);
+      }
+
+      const data = await res.json();
+      if (!data.access_token) {
+        throw new ResoAuthError('RESO token response missing access_token field.');
+      }
+
+      _tokenCache = {
+        access_token: data.access_token,
+        expires_at:   now + (data.expires_in || 3600) * 1000,
+      };
+
+      return _tokenCache.access_token;
+    } catch (err) {
+      if (attempt > RESO_AUTH_MAX_RETRIES || !isRetryableNetworkError(err)) {
+        throw err;
+      }
+      await backoff(attempt);
+    }
   }
 
-  const data = await res.json();
-  if (!data.access_token) {
-    throw new ResoAuthError('RESO token response missing access_token field.');
-  }
-
-  _tokenCache = {
-    access_token: data.access_token,
-    expires_at:   now + (data.expires_in || 3600) * 1000,
-  };
-
-  return _tokenCache.access_token;
+  throw new ResoAuthError('RESO token acquisition failed after retries.');
 }
 
 // ─── Core OData request ───────────────────────────────────────────────────────
@@ -128,8 +143,6 @@ async function getBearerToken() {
  * @returns {Promise<{value: object[], '@odata.count'?: number, '@odata.nextLink'?: string}>}
  */
 async function resoGet(resource, odata = {}) {
-  const token = await getBearerToken();
-
   const params = new URLSearchParams();
   if (odata.$filter)  params.set('$filter',  odata.$filter);
   if (odata.$select)  params.set('$select',  odata.$select);
@@ -142,43 +155,54 @@ async function resoGet(resource, odata = {}) {
   const qs  = params.toString();
   const url = `${config.reso.baseUrl}/${resource}${qs ? '?' + qs : ''}`;
 
-  const res = await fetchWithTimeout(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept:        'application/json',
-      'User-Agent':  'DonnaSellsLV-Platform/2.0',
-    },
-  }, 30_000);
+  // Auth retry: clear token and reacquire exactly once on 401.
+  for (let authAttempt = 1; authAttempt <= 2; authAttempt++) {
+    const token = await getBearerToken();
 
-  if (res.status === 401) {
-    _tokenCache = null;
-    throw new ResoAuthError(`RESO API returned 401 Unauthorized for ${resource}`);
+    for (let requestAttempt = 1; requestAttempt <= RESO_HTTP_MAX_RETRIES + 1; requestAttempt++) {
+      try {
+        const res = await fetchWithTimeout(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept:        'application/json',
+            'User-Agent':  'DonnaSellsLV-Platform/2.0',
+          },
+        }, RESO_HTTP_TIMEOUT_MS, `GET ${resource} attempt=${requestAttempt} authAttempt=${authAttempt}`);
+
+        if (res.status === 401) {
+          _tokenCache = null;
+          if (authAttempt === 1) {
+            break;
+          }
+          throw new ResoAuthError(`RESO API returned 401 Unauthorized for ${resource}`);
+        }
+
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new ResoApiError(
+            `RESO API error ${res.status} for ${resource}: ${text.slice(0, 300)}`,
+            res.status
+          );
+        }
+
+        const rawBody = await res.text();
+        let parsed;
+        try {
+          parsed = rawBody ? JSON.parse(rawBody) : {};
+        } catch {
+          parsed = rawBody;
+        }
+        return normalizeResoPayload(parsed, resource);
+      } catch (err) {
+        if (!isRetryableRequestError(err) || requestAttempt > RESO_HTTP_MAX_RETRIES) {
+          throw err;
+        }
+        await backoff(requestAttempt);
+      }
+    }
   }
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new ResoApiError(
-      `RESO API error ${res.status} for ${resource}: ${text.slice(0, 300)}`,
-      res.status
-    );
-  }
-
-  const json = await res.json();
-
-  // OData responses wrap results in a 'value' array
-  if (json && typeof json === 'object' && Array.isArray(json.value)) {
-    return json;
-  }
-
-  // Spark RESO compatibility: sometimes returns D.Results
-  if (json?.D?.Results) {
-    return {
-      value: json.D.Results,
-      '@odata.count': json.D.TotalCount,
-    };
-  }
-
-  return { value: Array.isArray(json) ? json : [json] };
+  throw new ResoAuthError(`Unable to authenticate RESO request for ${resource}.`);
 }
 
 // ─── High-level helpers ───────────────────────────────────────────────────────
@@ -386,11 +410,72 @@ function extractMedia(r) {
 async function fetchWithTimeout(url, options = {}, timeoutMs = 30_000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const started = Date.now();
+  const label = options._label || 'HTTP';
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
+    const { _label, ...fetchOptions } = options;
+    const res = await fetch(url, { ...fetchOptions, signal: controller.signal });
+    const requestId = res.headers.get('x-request-id') || 'n/a';
+    const elapsed = Date.now() - started;
+    console.log(`[reso-client] [${elapsed}ms] ${label} status=${res.status} request_id=${requestId}`);
+    return res;
+  } catch (err) {
+    const elapsed = Date.now() - started;
+    console.warn(`[reso-client] [${elapsed}ms] ${label} failed: ${err.message}`);
+    throw err;
   } finally {
     clearTimeout(timer);
   }
+}
+
+function normalizeResoPayload(json, resource) {
+  // OData: expected shape { value: [...] }
+  if (json && typeof json === 'object' && Array.isArray(json.value)) {
+    return json;
+  }
+
+  // Legacy Spark compatibility: { D: { Results: [...] } }
+  if (json?.D && Array.isArray(json.D.Results)) {
+    return {
+      value: json.D.Results,
+      '@odata.count': Number.isFinite(Number(json.D.TotalCount)) ? Number(json.D.TotalCount) : null,
+      '@odata.nextLink': null,
+    };
+  }
+
+  // Metadata endpoint can return XML string in some environments.
+  if (resource === '$metadata' && typeof json === 'string') {
+    return { value: [], metadata: json };
+  }
+
+  // As a strict safeguard, fail fast on unknown shapes.
+  if (json && typeof json === 'object') {
+    const keys = Object.keys(json).slice(0, 8).join(', ');
+    throw new ResoApiError(`Unexpected RESO payload shape for ${resource}. Keys: ${keys}`, 502);
+  }
+
+  return { value: Array.isArray(json) ? json : [json] };
+}
+
+function isRetryableNetworkError(err) {
+  return err && (
+    err.name === 'AbortError' ||
+    /timed?\s*out/i.test(err.message) ||
+    /ECONNRESET|ECONNREFUSED|EAI_AGAIN|ENOTFOUND|fetch failed/i.test(err.message)
+  );
+}
+
+function isRetryableRequestError(err) {
+  if (isRetryableNetworkError(err)) return true;
+  if (err instanceof ResoApiError) {
+    return [408, 425, 429, 500, 502, 503, 504].includes(err.status);
+  }
+  return false;
+}
+
+async function backoff(attempt) {
+  const ms = Math.min(1500, 200 * (2 ** (attempt - 1)));
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ─── Error classes ────────────────────────────────────────────────────────────

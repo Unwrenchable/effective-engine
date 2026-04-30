@@ -138,6 +138,7 @@ async function buildApp() {
   fastify.register(require('./routes/admin/newsletter'), { prefix: '/v2/admin' });
   fastify.register(require('./routes/agent-studio'),   { prefix: '/v2/agent-studio' });
   fastify.register(require('./routes/ai'),              { prefix: '/v2/ai' });
+  fastify.register(require('./routes/engine'),          { prefix: '/api/engine' });
 
   // ── Error handler ──────────────────────────────────────────────────────────
 

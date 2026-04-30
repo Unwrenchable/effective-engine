@@ -75,6 +75,17 @@ const config = {
     openaiChatModel:    optional('OPENAI_CHAT_MODEL', 'gpt-4o-mini'),
   },
 
+  // Engine harness provider configuration
+  engine: {
+    realaiUrl:   optional('REALAI_URL'),
+    realaiKey:   optional('REALAI_KEY'),
+    realaiModel: optional('REALAI_MODEL', 'realai-1.0'),
+    timeoutMs:   optionalInt('REALAI_TIMEOUT_MS', 20000),
+    retries:     optionalInt('REALAI_RETRIES', 1),
+    maxMessages: optionalInt('ENGINE_MAX_MESSAGES', 24),
+    maxCharsPerMessage: optionalInt('ENGINE_MAX_CHARS_PER_MESSAGE', 4000),
+  },
+
   jwt: {
     secret:            optional('JWT_SECRET', 'CHANGE_ME_IN_PRODUCTION_minimum_64_chars_xxxxxxx'),
     expiresIn:         optional('JWT_EXPIRES_IN', '8h'),
