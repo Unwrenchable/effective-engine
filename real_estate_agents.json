@@ -46,6 +46,8 @@
     "tags": ["real-estate", "customer-service", "automation"],
     "capabilities": ["inquiry-handling", "scheduling", "communication"],
     "required_tools": ["read_file", "run_in_terminal"],
+    "preferred_profile": "balanced",
+    "risk_level": "low"
   },
   {
     "id": "property-valuator",

@@ -86,8 +86,10 @@ module.exports = async function agentStudioRoutes(fastify) {
       } else if (id === 'market-analyst') {
         const market = require('../services/market');
         try {
-          const analysis = await market.analyzeTrends(input?.city || 'Las Vegas');
-          result = `Market analysis: ${analysis.summary || 'Trends analyzed'}`;
+          const profile = await market.getNeighbourhoodProfile(
+            (input?.city || 'Las Vegas').toLowerCase().replace(/\s+/g, '-')
+          );
+          result = `Market analysis for ${profile.displayName}: ${profile.narrative}`;
         } catch (error) {
           result = 'Market service unavailable, using simulation';
         }
@@ -107,10 +109,9 @@ module.exports = async function agentStudioRoutes(fastify) {
         // Simulate negotiation
         result = 'Offer analyzed, counter-offer suggested.';
       } else if (id === 'data-sync-agent') {
-        // Call sync
         const sync = require('../sync/ingest');
         try {
-          await sync.run();
+          await sync.deltaSync();
           result = 'Data synchronized with MLS/IDX feeds.';
         } catch (error) {
           result = 'Sync failed, using simulation';
