@@ -32,15 +32,17 @@ Browser
 
 ### Option A — Blueprint (recommended)
 
-`render.yaml` in the repository root defines the entire backend as infrastructure-as-code: one Fastify web service, one PostgreSQL 15 database, and a persistent disk for listing photos.
+`render.yaml` in the repository root defines the entire backend as infrastructure-as-code: one Fastify web service and one PostgreSQL 15 database.
 
 1. Go to [dashboard.render.com/blueprints](https://dashboard.render.com/blueprints) → **New Blueprint Instance**.
 2. Connect the GitHub repository and select `render.yaml`.
 3. Render will create:
    - **donnasellslv-server** — Fastify web service
    - **donnasellslv-db** — PostgreSQL 15 database
-4. After creation, open the web service → **Environment** and fill in the variables marked `sync: false` (see table below).
+4. After creation, open the web service → **Environment** and fill in the variables marked `sync: false` (see table below). In particular, set `CDN_PROVIDER` to `r2`, `s3`, or `minio` (see [Media storage](#media-storage) below).
 5. Click **Manual Deploy** → **Deploy latest commit** to apply the environment changes.
+
+> **Database migrations run automatically.** The start command is `node db/migrate.js && node server/index.js`, so every deploy (including the very first one) applies any pending migrations before the server starts. No Shell tab access is needed.
 
 ### Option B — Manual setup
 
@@ -54,14 +56,14 @@ Browser
    - Connect the GitHub repository
    - Runtime: **Node**, Region: Oregon (match the database region)
    - Build Command: `npm install --production`
-   - Start Command: `node server/index.js`
+   - Start Command: `node db/migrate.js && node server/index.js`
    - Health Check Path: `/health`
    - Plan: Starter (upgrade to Standard for production traffic)
 
-3. **Add a persistent disk** (for `CDN_PROVIDER=local` photo storage)
+3. **Add a persistent disk** *(optional — only needed for `CDN_PROVIDER=local`)*
    - Web service → **Disks** → **Add Disk**
    - Mount Path: `/var/data/media`, Size: 20 GB
-   - Skip this step if you configure Cloudflare R2, AWS S3, or MinIO instead.
+   - Skip this step if you configure Cloudflare R2, AWS S3, or MinIO instead (recommended).
 
 4. Set all environment variables (see table below).
 
@@ -87,7 +89,7 @@ Set these in Render dashboard → web service → **Environment**.
 | `OPENAI_API_KEY` | ✅ | Your OpenAI API key |
 | `OPENAI_EMBEDDING_MODEL` | | `text-embedding-3-small` (default) |
 | `OPENAI_CHAT_MODEL` | | `gpt-4o-mini` (default) |
-| `CDN_PROVIDER` | ✅ | `local` (disk) · `r2` · `s3` · `minio` |
+| `CDN_PROVIDER` | ✅ | `r2` · `s3` · `minio` · `local` (local requires disk) |
 | `MEDIA_LOCAL_PATH` | | `/var/data/media` (matches disk mount path) |
 | `MEDIA_PUBLIC_URL` | | `/media` |
 | `SMTP_HOST` | ✅ | Your SMTP server hostname |
@@ -102,8 +104,19 @@ Set these in Render dashboard → web service → **Environment**.
 | `REDIS_ENABLED` | | `false` (default) — pg-boss handles queues via PostgreSQL |
 
 > **Cloud media storage (recommended for production)**
-> Replace `CDN_PROVIDER=local` + disk with Cloudflare R2 or AWS S3.
+> Use Cloudflare R2 or AWS S3 instead of `CDN_PROVIDER=local` to avoid needing a persistent disk.
 > See `.env.example` for `R2_*` / `AWS_*` / `MINIO_*` variables.
+
+### <a name="media-storage"></a>Media storage options
+
+| Provider | `CDN_PROVIDER` value | Additional variables required | Disk needed? |
+|----------|---------------------|-------------------------------|--------------|
+| Cloudflare R2 | `r2` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | No |
+| AWS S3 | `s3` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET` | No |
+| MinIO | `minio` | `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET` | No |
+| Local disk | `local` | `MEDIA_LOCAL_PATH=/var/data/media` | **Yes** (Render paid plan) |
+
+Set the `CDN_PROVIDER` env var and fill in the matching variables in the Render dashboard before your first deploy.
 
 ### MLS / RESO credentials
 
@@ -112,20 +125,16 @@ Set these in Render dashboard → web service → **Environment**.
 3. Request GLVAR MLS access through your GLVAR membership portal at [lasvegasrealtor.com](https://www.lasvegasrealtor.com/) → MLS Resources → Data & Technology → IDX/API access.
 4. Approval typically takes 3–10 business days. Set `RESO_MOCK=true` in the interim to use seed data.
 
-### Run database migrations
+### Database migrations
 
-After the service is live, open the Render web service → **Shell** tab and run:
+Migrations run **automatically** every time the service starts (the start command is `node db/migrate.js && node server/index.js`). No Shell tab access is required.
 
-```bash
-npm run migrate
-```
-
-This applies all SQL migrations in `db/migrations/` in order, including:
+All SQL migrations in `db/migrations/` are applied in order, including:
 - `CREATE EXTENSION IF NOT EXISTS postgis;`
 - `CREATE EXTENSION IF NOT EXISTS vector;`
 - All schema tables (listings, auth, alerts, market snapshots, etc.)
 
-Check status at any time:
+If you do have Shell access and want to check migration status manually:
 
 ```bash
 node db/migrate.js --status
@@ -133,12 +142,14 @@ node db/migrate.js --status
 
 ### Initial MLS sync
 
+The MLS sync scheduler starts automatically with the server (15-minute delta syncs; full sync daily at 3 AM UTC). To trigger an immediate sync without Shell access, simply redeploy the service — the startup sync runs on launch when `RESO_MOCK=false`.
+
+If you do have Shell access, you can trigger syncs manually:
+
 ```bash
 npm run sync:now               # delta sync (uses RESO_MOCK seed data if RESO_MOCK=true)
 npm run sync:now -- --full     # full sync (first time with live feed — may take several minutes)
 ```
-
-The scheduler starts automatically with the server: 15-minute delta syncs and a full sync daily at 3 AM UTC.
 
 ### Verify the backend
 

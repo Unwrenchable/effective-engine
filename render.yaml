@@ -20,7 +20,9 @@ services:
     plan: starter          # starter ($7/mo) — upgrade to standard for production traffic
 
     buildCommand: npm install --production
-    startCommand: node server/index.js
+    # Migrations run automatically before the server starts on every deploy.
+    # No Shell tab access is required.
+    startCommand: node db/migrate.js && node server/index.js
 
     # Render injects $PORT automatically; the server reads it via config.js
     # No need to set PORT manually — Render sets it to 10000 by default.
@@ -28,13 +30,17 @@ services:
     healthCheckPath: /health
     autoDeploy: true
 
-    # Local photo storage (CDN_PROVIDER=local)
-    # Swap to CDN_PROVIDER=r2 / s3 / minio + delete this disk block
-    # when you have a cloud CDN configured.
-    disk:
-      name: media-storage
-      mountPath: /var/data/media
-      sizeGB: 20
+    # Persistent disk for local photo storage (CDN_PROVIDER=local).
+    # OPTION A (no disk required): delete the disk block below and set
+    #   CDN_PROVIDER=r2 | s3 | minio in the Environment section, then fill
+    #   in the corresponding R2_* / AWS_* / MINIO_* variables.
+    # OPTION B (local disk): uncomment the block below (requires a paid Render
+    #   plan that supports persistent storage).
+    #
+    # disk:
+    #   name: media-storage
+    #   mountPath: /var/data/media
+    #   sizeGB: 20
 
     envVars:
       - key: NODE_ENV
@@ -88,9 +94,13 @@ services:
       - key: OPENAI_CHAT_MODEL
         value: gpt-4o-mini
 
-      # Media storage — local disk (mounted above)
+      # Media storage — configure one provider below.
+      # CDN_PROVIDER=local  → requires the disk block above to be uncommented.
+      # CDN_PROVIDER=r2     → set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
+      # CDN_PROVIDER=s3     → set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET.
+      # CDN_PROVIDER=minio  → set MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET.
       - key: CDN_PROVIDER
-        value: local
+        sync: false         # fill in: local | r2 | s3 | minio
       - key: MEDIA_LOCAL_PATH
         value: /var/data/media
       - key: MEDIA_PUBLIC_URL
