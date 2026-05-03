@@ -266,6 +266,8 @@ Submit `https://www.donnasellslv.com/horses/` separately in Google Search Consol
 
 ## Local development
 
+### macOS / Linux (bash)
+
 ```bash
 # 1. Install dependencies
 npm install
@@ -285,8 +287,6 @@ npm run sync:now
 npm run dev        # auto-restart on file changes
 ```
 
-The server listens on port 3001 by default. It serves `app/` at `/`, media at `/media/`, IDX routes at `/api/idx/`, and the platform API at `/v2/`.
-
 For AI features locally, install Ollama:
 
 ```bash
@@ -296,5 +296,39 @@ ollama pull llama3.2           # chat / descriptions
 ollama pull llava              # photo tagging (vision)
 ```
 
+### Windows (PowerShell)
+
+```powershell
+# 1. Install dependencies
+npm install
+
+# 2. Set up environment
+Copy-Item .env.example .env
+# Open .env in a text editor and set DATABASE_URL and JWT_SECRET at minimum
+# Leave RESO_MOCK=true to use seed data (no live MLS license needed)
+
+# 3. Run database migrations
+npm run migrate
+
+# 4. Run initial sync (uses seed data with RESO_MOCK=true)
+npm run sync:now
+
+# 5. Start the server
+npm run dev        # auto-restart on file changes
+```
+
+For AI features on Windows, download the Ollama installer from <https://ollama.com/download>,
+run it, then pull the required models:
+
+```powershell
+ollama pull nomic-embed-text   # 768-dim embeddings
+ollama pull llama3.2           # chat / descriptions
+ollama pull llava              # photo tagging (vision)
+```
+
 Set `AI_PROVIDER=ollama` in `.env` (the default). No API key required.
+
+---
+
+The server listens on port 3001 by default. It serves `app/` at `/`, media at `/media/`, IDX routes at `/api/idx/`, and the platform API at `/v2/`.
 

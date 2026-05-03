@@ -182,6 +182,8 @@ Full list in `.env.example`. Key variables:
 
 ## Quick start
 
+### macOS / Linux (bash)
+
 ```bash
 # 1. Install Ollama (self-hosted AI)
 curl -fsSL https://ollama.com/install.sh | sh
@@ -195,6 +197,37 @@ npm install
 # 3. Set up environment
 cp .env.example .env
 # Edit .env — set DATABASE_URL and JWT_SECRET at minimum
+
+# 4. Run database migrations
+npm run migrate
+
+# 5. (Optional) Seed with mock listings for development
+# RESO_MOCK=true is already the default in .env.example
+
+# 6. Run initial MLS sync
+npm run sync:now   # uses RESO_MOCK=true seed data by default
+
+# 7. Start the server
+npm run dev        # development (auto-restart)
+npm start          # production
+```
+
+### Windows (PowerShell)
+
+```powershell
+# 1. Install Ollama (self-hosted AI)
+#    Download the Windows installer from https://ollama.com/download and run it.
+#    Then pull the required models:
+ollama pull nomic-embed-text   # embeddings
+ollama pull llama3.2           # chat / descriptions
+ollama pull llava              # photo tags (vision)
+
+# 2. Install dependencies
+npm install
+
+# 3. Set up environment
+Copy-Item .env.example .env
+# Open .env in a text editor and set DATABASE_URL and JWT_SECRET at minimum
 
 # 4. Run database migrations
 npm run migrate
