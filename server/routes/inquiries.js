@@ -177,6 +177,7 @@ async function notifyAsync(inquiryId, data) {
       subject: `New lead (#${inquiryId})${data.listing_id ? ` — MLS# ${data.listing_id}` : ''} [${source}]`,
       text: [
         `Lead #${inquiryId} — ${source}`,
+        `Name:    ${data.name || 'N/A'}`,
         `Type:    ${data.inquiry_type}`,
         `Phone:   ${data.phone || 'N/A'}`,
         `Listing: ${data.listing_id || 'N/A'}`,

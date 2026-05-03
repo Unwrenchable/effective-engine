@@ -59,6 +59,19 @@ async function getUserById(id) {
   return result.rows[0] || null;
 }
 
+/**
+ * Get user by email (without password hash).
+ * @param {string} email
+ * @returns {Promise<object|null>}
+ */
+async function getUserByEmail(email) {
+  const result = await query(
+    `SELECT id, email, role, full_name, is_active, created_at FROM users WHERE email = $1`,
+    [email.toLowerCase()]
+  );
+  return result.rows[0] || null;
+}
+
 // ─── API Keys ────────────────────────────────────────────────────────────────
 
 /**
@@ -113,4 +126,4 @@ async function verifyApiKey(rawKey) {
   return null;
 }
 
-module.exports = { createUser, verifyUserCredentials, getUserById, createApiKey, verifyApiKey };
+module.exports = { createUser, verifyUserCredentials, getUserById, getUserByEmail, createApiKey, verifyApiKey };

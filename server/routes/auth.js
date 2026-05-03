@@ -74,6 +74,38 @@ module.exports = async function authRoutes(fastify) {
     return reply.send({ ...token, user: safeUser(user) });
   });
 
+  // ── Refresh token ──────────────────────────────────────────────────────────
+  fastify.post('/refresh', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['refresh_token'],
+        properties: {
+          refresh_token: { type: 'string' },
+        },
+      },
+    },
+  }, async (req, reply) => {
+    let payload;
+    try {
+      payload = fastify.jwt.verify(req.body.refresh_token);
+    } catch {
+      return reply.code(401).send({ error: 'Invalid or expired refresh token.' });
+    }
+
+    if (payload.type !== 'refresh') {
+      return reply.code(401).send({ error: 'Invalid token type.' });
+    }
+
+    const user = await userModel.getUserById(payload.id);
+    if (!user || !user.is_active) {
+      return reply.code(401).send({ error: 'User not found or inactive.' });
+    }
+
+    const token = await issueTokens(fastify, user);
+    return reply.send({ ...token, user: safeUser(user) });
+  });
+
   // ── Current user ───────────────────────────────────────────────────────────
   fastify.get('/me', { onRequest: [fastify.authenticate] }, async (req, reply) => {
     const user = await userModel.getUserById(req.user.id);
