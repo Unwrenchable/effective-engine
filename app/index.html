@@ -53,7 +53,9 @@
     <!-- Canonical + theme -->
     <link rel="canonical" href="https://www.donnasellslv.com/" />
     <meta name="theme-color" content="#090b10" />
+    <meta name="author" content="Donna Sells LV" />
     <link rel="icon" type="image/svg+xml" href="/icons/house-line.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -79,7 +81,7 @@
         "@type": ["RealEstateAgent", "LocalBusiness"],
         "name": "Donna Sells LV",
         "url": "https://www.donnasellslv.com/",
-        "telephone": "+1-702-555-0100",
+        "telephone": "+1-702-555-0100", /* ⚠️ TODO: replace with live number before launch */
         "priceRange": "$$$",
         "image": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80",
         "address": {
@@ -174,8 +176,10 @@
     </script>
 
     <!-- Leaflet for map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   </head>
   <body>
     <a class="skip-nav" href="#main-content">Skip to main content</a>
@@ -329,7 +333,7 @@
       <!-- Property Map -->
       <section class="card" id="map-section">
         <h2>Property Map</h2>
-        <div id="property-map" style="height: 400px;"></div>
+        <div id="property-map" style="height: 400px;" role="application" aria-label="Las Vegas Valley property map"></div>
       </section>
 
       <!-- Featured Listings -->
@@ -764,9 +768,10 @@
           <a href="https://www.youtube.com/@donnasellslv" rel="noopener noreferrer" target="_blank">YouTube</a>
         </nav>
         <p class="footer-disclaimer">
-          Licensed Nevada Real Estate Agent. All information is deemed reliable
-          but not guaranteed. Listings and pricing are subject to change without
-          notice. Equal Housing Opportunity.
+          Licensed Nevada Real Estate Agent · NV License #S.0000000 ·
+          Equal Housing Opportunity &#9075; ·
+          All information is deemed reliable but not guaranteed.
+          Listings and pricing are subject to change without notice.
         </p>
         <p class="footer-copy">© <span id="year"></span> Donna Sells LV. All rights reserved.</p>
       </div>
@@ -942,12 +947,15 @@
       }
 
       // ─── Phone obfuscation ─────────────────────────────────────────
+      // ⚠️  TODO BEFORE LAUNCH: Replace placeholder number below with
+      //     Donna's live business number in BOTH `parts` and `raw`.
+      //     Also update "telephone" in the JSON-LD <script> in <head>.
       // The number is split into parts and assembled at runtime so
       // automated scrapers cannot harvest it from raw HTML source.
       (function () {
         var parts = ['(702)', '\u00a0', '555', '-', '0100'];
         var num   = parts.join('');
-        var raw   = '+17025550100'; // Replace with live business number before launch
+        var raw   = '+17025550100'; // ← REPLACE with live business number before launch
         var el    = document.getElementById('biz-phone');
         if (!el) return;
         var a = document.createElement('a');

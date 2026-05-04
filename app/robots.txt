@@ -6,11 +6,20 @@ Allow: /
 Disallow: /search
 Disallow: /contact-submitted
 
+# Block internal tools and auth-protected pages
+Disallow: /admin
+Disallow: /admin/
+Disallow: /analytics
+Disallow: /analytics/
+Disallow: /engine
+Disallow: /engine/
+Disallow: /login
+Disallow: /api/
+Disallow: /v2/
+
 # Block common bot scanning paths
 Disallow: /wp-admin
 Disallow: /wp-login.php
-Disallow: /admin
-Disallow: /login
 Disallow: /.env
 Disallow: /config
 
