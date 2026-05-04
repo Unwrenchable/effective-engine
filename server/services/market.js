@@ -32,6 +32,9 @@ function computeFallbackStats(opts = {}) {
     city,
     postalCode,
     propertyType,
+    minPrice,
+    maxPrice,
+    minLotAcres,
     lookbackDays = 30,
   } = opts;
 
@@ -43,6 +46,12 @@ function computeFallbackStats(opts = {}) {
     if (city && !String(l.City || '').toLowerCase().includes(String(city).toLowerCase())) return false;
     if (postalCode && String(l.PostalCode || '') !== String(postalCode)) return false;
     if (propertyType && String(l.PropertyType || '') !== String(propertyType)) return false;
+    if (minPrice != null && Number(l.ListPrice || 0) < minPrice) return false;
+    if (maxPrice != null && Number(l.ListPrice || 0) > maxPrice) return false;
+    if (minLotAcres != null) {
+      const lotAcres = Number(l.LotSizeAcres || 0) || (Number(l.LotSizeSquareFeet || 0) / 43560);
+      if (!Number.isFinite(lotAcres) || lotAcres < minLotAcres) return false;
+    }
     return true;
   });
 
@@ -65,8 +74,28 @@ function computeFallbackStats(opts = {}) {
     .map((l) => l.OnMarketDate ? Math.max(0, (now - Date.parse(l.OnMarketDate)) / dayMs) : null)
     .filter((n) => n != null && Number.isFinite(n));
 
+  const pricePerSqft = listings
+    .map((l) => {
+      const price = Number(l.ListPrice || 0);
+      const livingArea = Number(l.LivingArea || 0);
+      if (!Number.isFinite(price) || !Number.isFinite(livingArea) || price <= 0 || livingArea <= 0) return null;
+      return price / livingArea;
+    })
+    .filter((n) => n != null && Number.isFinite(n))
+    .sort((a, b) => a - b);
+
   const avgDays = daysOnMarket.length
     ? Math.round(daysOnMarket.reduce((sum, n) => sum + n, 0) / daysOnMarket.length)
+    : null;
+
+  const medianPpsf = pricePerSqft.length
+    ? (pricePerSqft.length % 2
+      ? pricePerSqft[(pricePerSqft.length - 1) / 2]
+      : (pricePerSqft[pricePerSqft.length / 2 - 1] + pricePerSqft[pricePerSqft.length / 2]) / 2)
+    : null;
+
+  const avgPpsf = pricePerSqft.length
+    ? pricePerSqft.reduce((sum, n) => sum + n, 0) / pricePerSqft.length
     : null;
 
   const lookbackMs = lookbackDays * dayMs;
@@ -88,6 +117,8 @@ function computeFallbackStats(opts = {}) {
     avg_price: avg,
     min_price: min,
     max_price: max,
+    median_price_per_sqft: medianPpsf,
+    avg_price_per_sqft: avgPpsf,
     avg_days_on_market: avgDays,
     new_listings_30d: newListings,
     price_reductions_30d: priceReductions,

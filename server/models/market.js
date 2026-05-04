@@ -9,10 +9,21 @@ const { query } = require('./db');
  * @param {string} [opts.city]
  * @param {string} [opts.postalCode]
  * @param {string} [opts.propertyType]
+ * @param {number} [opts.minPrice]
+ * @param {number} [opts.maxPrice]
+ * @param {number} [opts.minLotAcres]
  * @param {number} [opts.lookbackDays]  default 30
  * @returns {Promise<object>}
  */
-async function getMarketStats({ city, postalCode, propertyType, lookbackDays = 30 } = {}) {
+async function getMarketStats({
+  city,
+  postalCode,
+  propertyType,
+  minPrice,
+  maxPrice,
+  minLotAcres,
+  lookbackDays = 30,
+} = {}) {
   const conditions = [`l.mls_status = 'Active'`];
   const params     = [];
   let   p          = 1;
@@ -20,17 +31,25 @@ async function getMarketStats({ city, postalCode, propertyType, lookbackDays = 3
   if (city)         { conditions.push(`l.city ILIKE $${p++}`);         params.push(`%${city}%`); }
   if (postalCode)   { conditions.push(`l.postal_code = $${p++}`);      params.push(postalCode); }
   if (propertyType) { conditions.push(`l.property_type = $${p++}`);    params.push(propertyType); }
+  if (minPrice != null)  { conditions.push(`l.list_price >= $${p++}`); params.push(minPrice); }
+  if (maxPrice != null)  { conditions.push(`l.list_price <= $${p++}`); params.push(maxPrice); }
+  if (minLotAcres != null) {
+    conditions.push(`COALESCE(l.lot_size_acres, l.lot_size_sqft / 43560.0) >= $${p++}`);
+    params.push(minLotAcres);
+  }
 
   const where = `WHERE ${conditions.join(' AND ')}`;
 
   const activeResult = await query(
     `SELECT
        COUNT(*)                                          AS active_count,
-       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY list_price) AS median_price,
-       AVG(list_price)                                  AS avg_price,
-       MIN(list_price)                                  AS min_price,
-       MAX(list_price)                                  AS max_price,
-       AVG(EXTRACT(DAY FROM NOW() - on_market_date))    AS avg_days_on_market
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY list_price) AS median_price,
+        AVG(list_price)                                  AS avg_price,
+        MIN(list_price)                                  AS min_price,
+        MAX(list_price)                                  AS max_price,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY (list_price / NULLIF(living_area, 0))) AS median_price_per_sqft,
+        AVG(list_price / NULLIF(living_area, 0))         AS avg_price_per_sqft,
+        AVG(EXTRACT(DAY FROM NOW() - on_market_date))    AS avg_days_on_market
      FROM listings l ${where}`,
     params
   );
@@ -55,7 +74,7 @@ async function getMarketStats({ city, postalCode, propertyType, lookbackDays = 3
 
   const stats            = activeResult.rows[0];
   const newListingsRow   = newListingsResult.rows[0] || { new_listings: 0 };
-  const priceChangeRow   = priceChangeResult.rows[0];
+  const priceChangeRow   = priceChangeResult.rows[0] || { price_reductions: 0 };
 
   return {
     active_count:    parseInt(stats.active_count, 10),
@@ -63,6 +82,8 @@ async function getMarketStats({ city, postalCode, propertyType, lookbackDays = 3
     avg_price:       stats.avg_price       ? parseFloat(stats.avg_price)       : null,
     min_price:       stats.min_price       ? parseFloat(stats.min_price)       : null,
     max_price:       stats.max_price       ? parseFloat(stats.max_price)       : null,
+    median_price_per_sqft: stats.median_price_per_sqft ? parseFloat(stats.median_price_per_sqft) : null,
+    avg_price_per_sqft: stats.avg_price_per_sqft ? parseFloat(stats.avg_price_per_sqft) : null,
     avg_days_on_market: stats.avg_days_on_market ? Math.round(parseFloat(stats.avg_days_on_market)) : null,
     new_listings_30d: parseInt(newListingsRow.new_listings, 10),
     price_reductions_30d: parseInt(priceChangeRow.price_reductions, 10),

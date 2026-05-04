@@ -31,15 +31,15 @@
     <meta property="og:url" content="https://www.donnasellslv.com/horses/" />
     <meta
       property="og:image"
-      content="https://images.unsplash.com/photo-1553284966-19b8815c7817?auto=format&fit=crop&w=1200&h=630&q=80"
+      content="https://www.donnasellslv.com/images/social-horses.png"
     />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@donnasellslv" />
     <meta name="twitter:title" content="Nevada Horse Properties | Donna &amp; Jeremy · Henderson Equestrian Real Estate" />
     <meta
       name="twitter:description"
@@ -47,12 +47,16 @@
     />
     <meta
       name="twitter:image"
-      content="https://images.unsplash.com/photo-1553284966-19b8815c7817?auto=format&fit=crop&w=1200&h=630&q=80"
+      content="https://www.donnasellslv.com/images/social-horses.png"
     />
+    <meta name="twitter:image:alt" content="Nevada Horse Properties serving Henderson, Boulder City, and Clark County" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://www.donnasellslv.com/horses/" />
     <meta name="theme-color" content="#0d0a06" />
+    <meta name="author" content="Donna Sells LV" />
+    <link rel="icon" type="image/svg+xml" href="/icons/horse-line.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -66,7 +70,7 @@
     <link
       rel="preload"
       as="image"
-      href="https://images.unsplash.com/photo-1553284966-19b8815c7817?auto=format&fit=crop&w=1600&q=80"
+      href="/images/hero-horses.svg"
     />
 
     <link rel="stylesheet" href="./styles.css" />
@@ -80,7 +84,7 @@
         "url": "https://www.donnasellslv.com/horses/",
         "telephone": "+1-702-219-6309",
         "priceRange": "$$",
-        "image": "https://images.unsplash.com/photo-1553284966-19b8815c7817?auto=format&fit=crop&w=1200&h=630&q=80",
+        "image": "https://www.donnasellslv.com/images/social-horses.png",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Henderson",
@@ -197,6 +201,14 @@
 
     <!-- ─── Hero ────────────────────────────────────────────────────── -->
     <header class="site-hero">
+      <img
+        class="hero-bg-img"
+        src="/images/hero-horses.svg"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+        loading="eager"
+      />
       <div class="hero-inner">
         <p class="eyebrow">Henderson &amp; Las Vegas Valley Equestrian Property Specialists</p>
         <h1>Nevada Horse<br />Properties</h1>
@@ -667,29 +679,34 @@
       <section aria-labelledby="market-heading" class="card" id="market">
         <h2 id="market-heading">Clark County Horse Property Market</h2>
         <p class="section-intro">
-          Current snapshot of the acreage and horse property segment across
-          Henderson, Boulder City, and greater Clark County.
+          Live snapshot of active 1+ acre residential inventory, refreshed automatically
+          as the closest public-facing proxy for local horse property pricing.
         </p>
-        <div class="market-grid">
+        <div
+          class="market-grid"
+          data-market-grid
+          data-market-endpoint="/v2/market/stats?propertyType=Residential&amp;minLotAcres=1&amp;lookbackDays=30"
+        >
           <div class="market-stat">
-            <strong>$895K</strong>
-            <span>Median price, 1–5 acre horse properties, Clark County</span>
+            <strong data-market-value="median_price">$895K</strong>
+            <span>Median list price for active 1+ acre homes</span>
           </div>
           <div class="market-stat">
-            <strong>42 days</strong>
-            <span>Avg. days on market, horse/acreage properties</span>
+            <strong data-market-value="avg_days_on_market">42 days</strong>
+            <span>Avg. days on market for active acreage listings</span>
           </div>
           <div class="market-stat">
-            <strong>~180</strong>
-            <span>Active horse property listings, Clark County</span>
+            <strong data-market-value="active_count">Live</strong>
+            <span>Active 1+ acre listings in the synced MLS store</span>
           </div>
           <div class="market-stat">
-            <strong>$180–$320</strong>
-            <span>Price per sq ft range, acreage/ranch homes</span>
+            <strong data-market-value="median_price_per_sqft">$180+</strong>
+            <span>Median price per sq ft for active acreage homes</span>
           </div>
         </div>
         <p class="market-note">
-          Data reflects GLVAR MLS acreage/horse property category, updated monthly.
+          Live market snapshot from current MLS-synced acreage inventory.
+          <span data-market-updated aria-live="polite"></span>
           <a href="#contact">Request a personalized horse property valuation</a> from Donna and Jeremy.
         </p>
       </section>
@@ -956,11 +973,11 @@
     </main>
 
     <!-- ─── Footer ──────────────────────────────────────────────────── -->
-    <footer class="site-footer">
+      <footer class="site-footer">
       <div class="footer-inner">
-        <p class="footer-brand">Donna Sells LV, llc</p>
+        <p class="footer-brand">Donna Sells LV, LLC</p>
         <p class="footer-brand-sub">Henderson, NV</p>
-        <span id="biz-phone" class="footer-phone" aria-label="Business phone number">(702) 219-6309</span>
+        <span id="biz-phone" class="footer-phone" aria-label="Business phone number"></span>
         <nav aria-label="Footer navigation">
           <a href="#search">Search</a>
           <a href="#listings">Properties</a>
@@ -978,10 +995,11 @@
           <a href="https://www.youtube.com/@donnasellslv" rel="noopener noreferrer" target="_blank">YouTube</a>
         </nav>
         <p class="footer-disclaimer">
-          Licensed Nevada Real Estate Agent. All information is deemed reliable but not guaranteed.
+          Licensed Nevada Real Estate Agent · NV License #S.0186191 · Equal Housing Opportunity &#9075; ·
+          All information is deemed reliable but not guaranteed.
           Horse property zoning information is provided for general guidance only and is not legal advice.
           Always verify current zoning with Clark County or the applicable municipality.
-          Listings and pricing are subject to change without notice. Equal Housing Opportunity.
+          Listings and pricing are subject to change without notice.
           Listing data © Greater Las Vegas Association of REALTORS® (GLVAR).
         </p>
         <p class="footer-copy">© <span id="year"></span> Donna Sells LV / Nevada Horse Properties. All rights reserved.</p>
@@ -1173,11 +1191,75 @@
         });
       })();
 
+      // ─── Market snapshot ────────────────────────────────────────────
+      (function () {
+        var marketGrid = document.querySelector('[data-market-grid]');
+        if (!marketGrid) return;
+
+        var endpoint = marketGrid.getAttribute('data-market-endpoint');
+        var updatedEl = document.querySelector('[data-market-updated]');
+        if (!endpoint) return;
+
+        function formatCompactCurrency(value) {
+          if (!Number.isFinite(value)) return '—';
+          return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            notation: 'compact',
+            maximumFractionDigits: 1,
+          }).format(value);
+        }
+
+        function formatCurrencyPerSqft(value) {
+          if (!Number.isFinite(value)) return '—';
+          return '$' + Math.round(value).toLocaleString('en-US');
+        }
+
+        function setValue(key, value) {
+          var el = marketGrid.querySelector('[data-market-value="' + key + '"]');
+          if (!el) return;
+
+          if (key === 'median_price') el.textContent = formatCompactCurrency(value);
+          if (key === 'avg_days_on_market') el.textContent = Number.isFinite(value) ? Math.round(value) + ' days' : '—';
+          if (key === 'active_count') el.textContent = Number.isFinite(value) ? value.toLocaleString('en-US') : '—';
+          if (key === 'median_price_per_sqft') el.textContent = Number.isFinite(value) ? formatCurrencyPerSqft(value) : '—';
+        }
+
+        fetch(endpoint, { headers: { Accept: 'application/json' } })
+          .then(function (res) {
+            if (!res.ok) throw new Error('Market stats request failed (' + res.status + ')');
+            return res.json();
+          })
+          .then(function (stats) {
+            setValue('median_price', Number(stats.median_price));
+            setValue('avg_days_on_market', Number(stats.avg_days_on_market));
+            setValue('active_count', Number(stats.active_count));
+            setValue('median_price_per_sqft', Number(stats.median_price_per_sqft));
+
+            if (updatedEl) {
+              updatedEl.textContent = ' Last refreshed ' + new Date().toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              }) + '.';
+            }
+          })
+          .catch(function (err) {
+            console.error('Horse market stats error:', err);
+          });
+      })();
+
       // ─── Phone obfuscation ─────────────────────────────────────────
       (function () {
         var parts = ['(702)', '\u00a0', '219', '-', '6309'];
+        var raw   = '+17022196309';
         var el    = document.getElementById('biz-phone');
-        if (el) el.textContent = parts.join('');
+        if (!el) return;
+        var a = document.createElement('a');
+        a.href = 'tel:' + raw;
+        a.textContent = parts.join('');
+        a.className = 'footer-phone';
+        el.parentNode.replaceChild(a, el);
       })();
 
       // ─── Form bot protection: timestamp ───────────────────────────

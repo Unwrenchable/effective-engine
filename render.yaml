@@ -72,9 +72,10 @@ services:
         value: "30d"
 
       # RESO / Spark API (MLS live feed)
-      # Set RESO_MOCK=false once you have GLVAR credentials
+      # Safe default for launch prep: use seed data until GLVAR/Spark access is approved.
+      # Set RESO_MOCK=false once live credentials are issued and tested.
       - key: RESO_MOCK
-        value: "false"
+        value: "true"
       - key: RESO_BASE_URL
         value: https://replication.sparkapi.com/Reso/OData
       - key: RESO_TOKEN_URL

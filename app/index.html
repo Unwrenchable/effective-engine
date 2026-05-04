@@ -31,15 +31,15 @@
     <meta property="og:url" content="https://www.donnasellslv.com/" />
     <meta
       property="og:image"
-      content="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80"
+      content="https://www.donnasellslv.com/images/social-main.png"
     />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@donnasellslv" />
     <meta name="twitter:title" content="Donna Sells LV | #1 Luxury Real Estate Las Vegas, Henderson &amp; Summerlin" />
     <meta
       name="twitter:description"
@@ -47,8 +47,9 @@
     />
     <meta
       name="twitter:image"
-      content="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80"
+      content="https://www.donnasellslv.com/images/social-main.png"
     />
+    <meta name="twitter:image:alt" content="Donna Sells LV luxury real estate in Las Vegas, Henderson, and Summerlin" />
 
     <!-- Canonical + theme -->
     <link rel="canonical" href="https://www.donnasellslv.com/" />
@@ -69,7 +70,7 @@
     <link
       rel="preload"
       as="image"
-      href="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80"
+      href="/images/hero-main.svg"
     />
 
     <link rel="stylesheet" href="./styles.css" />
@@ -81,9 +82,9 @@
         "@type": ["RealEstateAgent", "LocalBusiness"],
         "name": "Donna Sells LV",
         "url": "https://www.donnasellslv.com/",
-        "telephone": "+1-702-555-0100", /* ⚠️ TODO: replace with live number before launch */
+        "telephone": "+1-702-219-6309",
         "priceRange": "$$$",
-        "image": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80",
+        "image": "https://www.donnasellslv.com/images/social-main.png",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Las Vegas",
@@ -217,7 +218,7 @@
     <header class="site-hero">
       <img
         class="hero-bg-img"
-        src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80"
+        src="/images/hero-main.svg"
         alt=""
         aria-hidden="true"
         fetchpriority="high"
@@ -531,28 +532,33 @@
       <section aria-labelledby="market-heading" class="card" id="market">
         <h2 id="market-heading">Las Vegas Valley Market Snapshot</h2>
         <p class="section-intro">
-          Current luxury market data for the greater Las Vegas Valley, updated monthly.
+          Current luxury market data for active $1M+ residential listings, refreshed automatically.
         </p>
-        <div class="market-grid">
+        <div
+          class="market-grid"
+          data-market-grid
+          data-market-endpoint="/v2/market/stats?propertyType=Residential&amp;minPrice=1000000&amp;lookbackDays=30"
+        >
           <div class="market-stat">
-            <strong>$1.2M</strong>
-            <span>Median luxury home price, Las Vegas Valley</span>
+            <strong data-market-value="median_price">$1.2M</strong>
+            <span>Median list price for active $1M+ homes</span>
           </div>
           <div class="market-stat">
-            <strong>18 days</strong>
-            <span>Avg. days on market for $1M+ homes</span>
+            <strong data-market-value="avg_days_on_market">18 days</strong>
+            <span>Avg. days on market for active luxury listings</span>
           </div>
           <div class="market-stat">
-            <strong>97%</strong>
-            <span>List-to-sale price ratio, luxury segment</span>
+            <strong data-market-value="active_count">Live</strong>
+            <span>Active $1M+ listings in the synced MLS store</span>
           </div>
           <div class="market-stat">
-            <strong>$400+</strong>
-            <span>Median price per sq ft, Summerlin &amp; Henderson</span>
+            <strong data-market-value="median_price_per_sqft">$400+</strong>
+            <span>Median price per sq ft for active luxury homes</span>
           </div>
         </div>
         <p class="market-note">
-          Data reflects the Greater Las Vegas Association of REALTORS® market reports.
+          Live market snapshot from current MLS-synced listing data.
+          <span data-market-updated aria-live="polite"></span>
           <a href="#contact">Request a personalized market analysis</a> for your neighborhood.
         </p>
       </section>
@@ -693,7 +699,7 @@
                 id="contact-phone"
                 type="tel"
                 name="phone"
-                placeholder="+1 (702) 555-0100"
+                placeholder="+1 (702) 219-6309"
                 autocomplete="tel"
               />
             </label>
@@ -768,7 +774,7 @@
           <a href="https://www.youtube.com/@donnasellslv" rel="noopener noreferrer" target="_blank">YouTube</a>
         </nav>
         <p class="footer-disclaimer">
-          Licensed Nevada Real Estate Agent · NV License #S.0000000 ·
+          Licensed Nevada Real Estate Agent · NV License #S.0186191 ·
           Equal Housing Opportunity &#9075; ·
           All information is deemed reliable but not guaranteed.
           Listings and pricing are subject to change without notice.
@@ -946,16 +952,71 @@
         });
       }
 
+      // ─── Market snapshot ────────────────────────────────────────────
+      (function () {
+        var marketGrid = document.querySelector('[data-market-grid]');
+        if (!marketGrid) return;
+
+        var endpoint = marketGrid.getAttribute('data-market-endpoint');
+        var updatedEl = document.querySelector('[data-market-updated]');
+        if (!endpoint) return;
+
+        function formatCompactCurrency(value) {
+          if (!Number.isFinite(value)) return '—';
+          return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            notation: 'compact',
+            maximumFractionDigits: 1,
+          }).format(value);
+        }
+
+        function formatCurrencyPerSqft(value) {
+          if (!Number.isFinite(value)) return '—';
+          return '$' + Math.round(value).toLocaleString('en-US');
+        }
+
+        function setValue(key, value) {
+          var el = marketGrid.querySelector('[data-market-value="' + key + '"]');
+          if (!el) return;
+
+          if (key === 'median_price') el.textContent = formatCompactCurrency(value);
+          if (key === 'avg_days_on_market') el.textContent = Number.isFinite(value) ? Math.round(value) + ' days' : '—';
+          if (key === 'active_count') el.textContent = Number.isFinite(value) ? value.toLocaleString('en-US') : '—';
+          if (key === 'median_price_per_sqft') el.textContent = Number.isFinite(value) ? formatCurrencyPerSqft(value) : '—';
+        }
+
+        fetch(endpoint, { headers: { Accept: 'application/json' } })
+          .then(function (res) {
+            if (!res.ok) throw new Error('Market stats request failed (' + res.status + ')');
+            return res.json();
+          })
+          .then(function (stats) {
+            setValue('median_price', Number(stats.median_price));
+            setValue('avg_days_on_market', Number(stats.avg_days_on_market));
+            setValue('active_count', Number(stats.active_count));
+            setValue('median_price_per_sqft', Number(stats.median_price_per_sqft));
+
+            if (updatedEl) {
+              updatedEl.textContent = ' Last refreshed ' + new Date().toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              }) + '.';
+            }
+          })
+          .catch(function (err) {
+            console.error('Market stats error:', err);
+          });
+      })();
+
       // ─── Phone obfuscation ─────────────────────────────────────────
-      // ⚠️  TODO BEFORE LAUNCH: Replace placeholder number below with
-      //     Donna's live business number in BOTH `parts` and `raw`.
-      //     Also update "telephone" in the JSON-LD <script> in <head>.
       // The number is split into parts and assembled at runtime so
       // automated scrapers cannot harvest it from raw HTML source.
       (function () {
-        var parts = ['(702)', '\u00a0', '555', '-', '0100'];
+        var parts = ['(702)', '\u00a0', '219', '-', '6309'];
         var num   = parts.join('');
-        var raw   = '+17025550100'; // ← REPLACE with live business number before launch
+        var raw   = '+17022196309';
         var el    = document.getElementById('biz-phone');
         if (!el) return;
         var a = document.createElement('a');

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Nevada Horse Properties social sharing image</title>
+  <desc id="desc">Horse property branding for Donna Sells LV featuring Henderson, Boulder City, and Clark County acreage homes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d0a06" />
+      <stop offset="50%" stop-color="#1c1917" />
+      <stop offset="100%" stop-color="#292524" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d7b273" />
+      <stop offset="100%" stop-color="#f3ddb1" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <ellipse cx="1010" cy="135" rx="220" ry="125" fill="#d7b273" opacity="0.08" />
+  <ellipse cx="1060" cy="530" rx="250" ry="130" fill="#d7b273" opacity="0.05" />
+  <rect x="74" y="78" width="215" height="3" fill="url(#gold)" />
+  <text x="74" y="150" fill="#d7b273" font-family="'Cormorant Garamond', Georgia, serif" font-size="38" letter-spacing="5">NEVADA HORSE PROPERTIES</text>
+  <text x="74" y="250" fill="#f8fafc" font-family="'Cormorant Garamond', Georgia, serif" font-size="78" font-weight="700">Horse Property Specialists</text>
+  <text x="74" y="326" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="36">Henderson • Boulder City • Clark County</text>
+  <text x="74" y="392" fill="#d6d3d1" font-family="Inter, Arial, sans-serif" font-size="27">Acreage, barns, arenas, zoning guidance, and equestrian-focused representation.</text>
+  <text x="74" y="500" fill="#e7e5e4" font-family="Inter, Arial, sans-serif" font-size="24">donnasellslv.com/horses</text>
+  <rect x="74" y="525" width="500" height="2" fill="url(#gold)" opacity="0.85" />
+  <path d="M853 462c48-38 95-86 118-143 8-19 16-45 42-51 20-5 40 8 48 26 9 20 8 43 4 64-9 47-32 92-68 123-39 34-97 51-147 34 31 1 63-18 72-47-28 9-57 7-83-6 5-11 10-21 14-32z" fill="none" stroke="#f8fafc" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M923 333c17-18 38-31 62-36" fill="none" stroke="#d7b273" stroke-width="8" stroke-linecap="round" />
+  <path d="M896 490h198" stroke="#d7b273" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+</svg>

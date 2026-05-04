@@ -19,13 +19,24 @@ module.exports = async function marketRoutes(fastify) {
           city:          { type: 'string', maxLength: 100 },
           postalCode:    { type: 'string', maxLength: 10 },
           propertyType:  { type: 'string', maxLength: 50 },
+          minPrice:      { type: 'integer', minimum: 0 },
+          maxPrice:      { type: 'integer', minimum: 0 },
+          minLotAcres:   { type: 'number', minimum: 0 },
           lookbackDays:  { type: 'integer', minimum: 1, maximum: 365, default: 30 },
         },
       },
     },
   }, async (req, reply) => {
-    const { city, postalCode, propertyType, lookbackDays } = req.query;
-    const stats = await marketService.getStats({ city, postalCode, propertyType, lookbackDays });
+    const { city, postalCode, propertyType, minPrice, maxPrice, minLotAcres, lookbackDays } = req.query;
+    const stats = await marketService.getStats({
+      city,
+      postalCode,
+      propertyType,
+      minPrice,
+      maxPrice,
+      minLotAcres,
+      lookbackDays,
+    });
     return reply.send(stats);
   });
 };
