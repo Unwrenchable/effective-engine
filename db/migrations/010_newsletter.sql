@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
                      CHECK (source IN ('main_site', 'horse_site')),
   -- One-time token sent in unsubscribe links; generated on insert.
   unsubscribe_token TEXT        NOT NULL UNIQUE
-                     DEFAULT encode(gen_random_bytes(24), 'hex'),
+                     DEFAULT replace(gen_random_uuid()::text, '-', ''),
   subscribed_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   unsubscribed_at  TIMESTAMPTZ,
   -- Allow the same email to subscribe from multiple sources.
