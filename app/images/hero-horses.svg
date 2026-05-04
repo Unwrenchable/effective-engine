@@ -18,12 +18,5 @@
   <path d="M1065 705c66-47 133-116 164-204 10-30 17-72 56-82 29-8 58 10 70 35 14 29 13 62 7 92-12 67-43 132-95 175-56 47-139 71-209 48 46 1 90-25 104-67-40 13-81 10-119-9 7-16 14-31 22-45z" fill="none" stroke="#f8fafc" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
   <path d="M1165 505c24-27 54-45 88-52" fill="none" stroke="#d7b273" stroke-width="10" stroke-linecap="round" />
   <path d="M1100 742h332" stroke="#d7b273" stroke-width="4" stroke-linecap="round" opacity="0.8" />
-  <rect x="112" y="132" width="270" height="4" fill="url(#gold)" />
-  <text x="112" y="232" fill="#d7b273" font-family="'Cormorant Garamond', Georgia, serif" font-size="48" letter-spacing="6">NEVADA HORSE PROPERTIES</text>
-  <text x="112" y="372" fill="#f8fafc" font-family="'Cormorant Garamond', Georgia, serif" font-size="104" font-weight="700">Equestrian Expertise</text>
-  <text x="112" y="470" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="48">Henderson • Boulder City • Clark County</text>
-  <text x="112" y="560" fill="#d6d3d1" font-family="Inter, Arial, sans-serif" font-size="34">Horse-zoned acreage, barn properties, arena estates, and</text>
-  <text x="112" y="610" fill="#d6d3d1" font-family="Inter, Arial, sans-serif" font-size="34">representation from agents who live the equestrian lifestyle.</text>
-  <text x="112" y="738" fill="#e7e5e4" font-family="Inter, Arial, sans-serif" font-size="28">donnasellslv.com/horses</text>
-  <rect x="112" y="772" width="560" height="3" fill="url(#gold)" opacity="0.85" />
+
 </svg>

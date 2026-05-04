@@ -19,12 +19,5 @@
   <path d="M1090 655v-98l118-78 118 78v98" fill="none" stroke="#f8fafc" stroke-width="16" stroke-linejoin="round" />
   <path d="M1142 655v-58h134v58" fill="none" stroke="#f8fafc" stroke-width="16" stroke-linejoin="round" />
   <path d="M1075 544l133-92 133 92" fill="none" stroke="#d7b273" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
-  <rect x="112" y="132" width="214" height="4" fill="url(#gold)" />
-  <text x="112" y="232" fill="#d7b273" font-family="'Cormorant Garamond', Georgia, serif" font-size="48" letter-spacing="7">DONNA SELLS LV</text>
-  <text x="112" y="380" fill="#f8fafc" font-family="'Cormorant Garamond', Georgia, serif" font-size="112" font-weight="700">Luxury Living</text>
-  <text x="112" y="480" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="50">Las Vegas • Henderson • Summerlin</text>
-  <text x="112" y="570" fill="#cbd5e1" font-family="Inter, Arial, sans-serif" font-size="34">Private showings, off-market opportunities, and concierge representation</text>
-  <text x="112" y="620" fill="#cbd5e1" font-family="Inter, Arial, sans-serif" font-size="34">for the valley's most sought-after homes and penthouses.</text>
-  <text x="112" y="738" fill="#e5e7eb" font-family="Inter, Arial, sans-serif" font-size="28">donnasellslv.com</text>
-  <rect x="112" y="772" width="520" height="3" fill="url(#gold)" opacity="0.85" />
+
 </svg>
