@@ -1076,7 +1076,8 @@
             offmarket: 'general',
             valuation: 'general',
           };
-          var inquiryType = /^(showing|info|offer)$/.test(interestVal)
+          var validInquiryTypes = { showing: true, info: true, offer: true };
+          var inquiryType = validInquiryTypes[interestVal]
             ? interestVal
             : (inquiryTypeMap[interestVal] || 'general');
 
