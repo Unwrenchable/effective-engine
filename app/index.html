@@ -1071,15 +1071,14 @@
           var interestEl = mainContactForm.querySelector('[name="interest"]');
           var interestVal = interestEl ? interestEl.value : '';
           var inquiryTypeMap = {
-            showing:   'showing',
-            info:      'info',
-            offer:     'offer',
             buying:    'general',
             selling:   'general',
             offmarket: 'general',
             valuation: 'general',
           };
-          var inquiryType = inquiryTypeMap[interestVal] || 'general';
+          var inquiryType = /^(showing|info|offer)$/.test(interestVal)
+            ? interestVal
+            : (inquiryTypeMap[interestVal] || 'general');
 
           // 4. Turnstile token (may be absent if Turnstile not configured)
           var tsWidget = mainContactForm.querySelector('[name="cf-turnstile-response"]');
