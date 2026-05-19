@@ -1070,7 +1070,11 @@
           // 3. Gather interest → inquiry_type mapping
           var interestEl = mainContactForm.querySelector('[name="interest"]');
           var interestVal = interestEl ? interestEl.value : '';
-          var inquiryType = interestVal || 'general';
+          // Keep in sync with server/routes/inquiries.js inquiry_type enum.
+          var validInquiryTypes = ['showing', 'info', 'offer', 'general'];
+          var inquiryType = validInquiryTypes.includes(interestVal)
+            ? interestVal
+            : 'general';
 
           // 4. Turnstile token (may be absent if Turnstile not configured)
           var tsWidget = mainContactForm.querySelector('[name="cf-turnstile-response"]');
