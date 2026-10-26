@@ -17,7 +17,7 @@
     "@fastify/cors": "^10.0.2",
     "@fastify/jwt": "^10.0.0",
     "@fastify/rate-limit": "^10.2.1",
-    "@fastify/static": "^9.1.1",
+    "@fastify/static": "^10.1.2",
     "bcryptjs": "^3.0.2",
     "fastify": "^5.12.6",
     "nodemailer": "^8.0.7",
